@@ -1,0 +1,21 @@
+{
+  "frontend/src/App.tsx": "Main application component with TanStack Router setup, defining routes for invoices, customers, and invoice details, wrapped with ThemeProvider and Toaster.",
+  "frontend/src/components/AppShell.tsx": "Application shell layout component providing header with brand, navigation menu, main content area, and footer with attribution.",
+  "frontend/src/components/BrandHeader.tsx": "Brand header component displaying the Queen Bee logo PNG image (64x64) and company name with warm amber gradient background.",
+  "frontend/src/components/AsyncState.tsx": "Reusable component for handling loading, error, and empty states with consistent UI patterns across the application.",
+  "frontend/src/api/queryKeys.ts": "Centralized React Query key factory for customers and invoices using string IDs to ensure consistent cache invalidation and ESLint compliance.",
+  "frontend/src/api/backendClient.ts": "Backend client utilities including error normalization for user-friendly error messages.",
+  "frontend/src/features/customers/types.ts": "TypeScript types and utilities for customer data and form handling.",
+  "frontend/src/features/customers/queries.ts": "React Query hooks for customer operations including list, detail, and create mutations with cache management, using string-converted BigInt values in query keys.",
+  "frontend/src/features/customers/CustomersPage.tsx": "Customer management page with list view, add customer dialog, and table display of all customers.",
+  "frontend/src/features/customers/CustomerForm.tsx": "Reusable form component for creating customers with validation and error handling.",
+  "frontend/src/features/invoices/types.ts": "TypeScript types and utilities for invoice data including currency formatting, parsing, and total calculations.",
+  "frontend/src/features/invoices/queries.ts": "React Query hooks for invoice operations including list, detail, create, and payment recording with cache management, using string-converted BigInt values in query keys.",
+  "frontend/src/features/invoices/InvoicesPage.tsx": "Invoice management page with list view, create invoice dialog, and table display with customer names and payment status.",
+  "frontend/src/features/invoices/InvoiceForm.tsx": "Form component for creating invoices with customer selection and dynamic line items editor.",
+  "frontend/src/features/invoices/InvoiceLineItemsEditor.tsx": "Dynamic table editor for invoice line items supporting add, remove, and inline editing with computed totals.",
+  "frontend/src/features/invoices/InvoiceDetailPage.tsx": "Detailed invoice view page showing line items, payment summary, and payment recording functionality.",
+  "frontend/src/index.css": "Global styles with warm honey/amber OKLCH color system for light and dark modes, avoiding blue/purple tones.",
+  "frontend/tailwind.config.js": "Tailwind configuration with custom color tokens, Inter font family, and extended design system for Queen Bee branding.",
+  "frontend/index.html": "HTML entry point with favicon links referencing the Queen Bee logo assets in multiple sizes."
+}

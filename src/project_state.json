@@ -1,0 +1,193 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 11,
+  "summary": "ICP canister-based web app scaffolded with Motoko backend and React/Vite frontend, including Internet Identity authentication, core UI shell/branding, and initial Customers and Invoices CRUD-style pages.",
+  "existing_features": [
+    {
+      "id": "IF-1",
+      "title": "Motoko backend canister scaffold",
+      "synonyms": [
+        "backend canister",
+        "Motoko service"
+      ],
+      "description": "Initial Motoko backend setup with candid bindings and project build/deploy configuration for ICP.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-2",
+      "title": "React + Vite frontend scaffold",
+      "synonyms": [
+        "frontend app shell",
+        "Vite React app"
+      ],
+      "description": "Frontend application scaffold including routing/layout shell, Tailwind setup, and build tooling.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-3",
+      "title": "Internet Identity authentication integration",
+      "synonyms": [
+        "II auth",
+        "Internet Identity login"
+      ],
+      "description": "Client hooks and configuration to authenticate users via Internet Identity and create an authenticated actor for backend calls.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-4",
+      "title": "Backend client + typed declarations",
+      "synonyms": [
+        "backendClient",
+        "candid typings"
+      ],
+      "description": "Typed frontend bindings and client utilities for calling the backend canister (generated .did JS/TS and helper client).",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-5",
+      "title": "App shell with branding assets",
+      "synonyms": [
+        "BrandHeader",
+        "AppShell"
+      ],
+      "description": "Core UI shell components and generated brand images (logo, header banner, icons) wired into the frontend.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-6",
+      "title": "Shadcn UI component library integrated",
+      "synonyms": [
+        "shadcn/ui",
+        "UI primitives"
+      ],
+      "description": "Large set of reusable UI primitives (buttons, dialogs, forms, tables, etc.) added to the frontend component library.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-7",
+      "title": "Customers feature pages and form",
+      "synonyms": [
+        "CustomersPage",
+        "CustomerForm"
+      ],
+      "description": "Initial Customers feature implementation including types, queries, list page and create/edit form UI.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-8",
+      "title": "Invoices feature pages and editor",
+      "synonyms": [
+        "InvoicesPage",
+        "InvoiceForm",
+        "InvoiceDetailPage"
+      ],
+      "description": "Initial Invoices feature implementation including list/detail pages, invoice form, and line item editor UI with types and queries.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-9",
+      "title": "Client-side query key and storage utilities",
+      "synonyms": [
+        "queryKeys",
+        "StorageClient"
+      ],
+      "description": "Shared utilities for stable query keys and local/persistent client storage helpers used across features.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-10",
+      "title": "Build template and deployment scripts",
+      "synonyms": [
+        "build-template",
+        "Dockerfile",
+        "deploy.sh"
+      ],
+      "description": "Project build template files (Dockerfile, scripts, workspace config, ICP yaml/canister configs) to support repeatable builds and deployment.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-app-header-brand-mark-to-use-the-user-provided-attached-image-queen-bee-guitar-repair-3-png-instead-of-the-current-inline-svg-icon-keeping-the-same-visual-size-64x64-and-layout-spacing-in-the-header",
+      "title": "Update the app header brand mark to use the user-provided attached image (\"Queen Bee Guitar Repair 3.png\") instead of the current inline SVG icon, keeping the same visual size (64x64) and layout spacing in the header.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-and-wire-up-favicon-assets-derived-from-the-attached-logo-so-the-browser-tab-favicon-reflects-the-updated-branding",
+      "title": "Add and wire up favicon assets derived from the attached logo so the browser tab/favicon reflects the updated branding.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-store-the-generated-branding-images-as-static-frontend-assets-under-frontend-public-assets-generated-and-reference-them-directly-from-the-ui-do-not-serve-images-via-the-backend",
+      "title": "Store the generated branding images as static frontend assets under frontend/public/assets/generated and reference them directly from the UI (do not serve images via the backend).",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Update app icon/branding to use the user-provided attached image as the icon.",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "architectural_notes": [
+    "Frontend uses React + Vite with Tailwind and shadcn/ui component primitives.",
+    "Authentication is handled via Internet Identity; frontend creates an authenticated canister actor for API calls.",
+    "Feature structure introduced for Customers and Invoices with colocated types/queries/components.",
+    "Typed canister bindings (.did JS/TS) are included for frontend-backend integration.",
+    "Build/deploy templating added (Dockerfile/scripts/icp yaml) for reproducible ICP builds.",
+    "Build template expanded to include full React/Vite + Tailwind + shadcn/ui starter with ICP canister configs and workspace packaging.",
+    "Custom frontend ESLint rules added to enforce stable query keys (no bigint) and required Internet Identity provider configuration.",
+    "Image asset tooling added (resize/prune scripts) for generated branding assets in the build template."
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Square favicon image based on the attached crowned bee artwork (queen-bee-favicon.dim_32x32.png)\n- Square favicon image based on the attached crowned bee artwork (queen-bee-favicon.dim_48x48.png)\n- Square app icon image based on the attached crowned bee artwork (queen-bee-app-icon.dim_180x180.png)\n\n## Edit Images\n- Replace the existing logo artwork with the attached crowned bee mark, centered and cleanly cropped for a square logo (queen-bee-guitar-repair-logo.dim_512x512.png > queen-bee-guitar-repair-logo.dim_512x512.png)",
+  "generatedImages": [
+    {
+      "filename": "queen-bee-favicon.dim_32x32.png",
+      "description": "Square favicon image based on the attached crowned bee artwork",
+      "targetWidth": 32,
+      "targetHeight": 32
+    },
+    {
+      "filename": "queen-bee-favicon.dim_48x48.png",
+      "description": "Square favicon image based on the attached crowned bee artwork",
+      "targetWidth": 48,
+      "targetHeight": 48
+    },
+    {
+      "filename": "queen-bee-app-icon.dim_180x180.png",
+      "description": "Square app icon image based on the attached crowned bee artwork",
+      "targetWidth": 180,
+      "targetHeight": 180
+    },
+    {
+      "filename": "queen-bee-guitar-repair-logo.dim_512x512.png",
+      "description": "Replace the existing logo artwork with the attached crowned bee mark, centered and cleanly cropped for a square logo",
+      "targetWidth": 512,
+      "targetHeight": 512
+    }
+  ],
+  "projectName": "Replace app header icon with the attached Queen Bee logo image",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

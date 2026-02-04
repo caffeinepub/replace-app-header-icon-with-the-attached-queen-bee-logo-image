@@ -1,0 +1,26 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-04T22:54:11.654Z",
+  "summary": "Header brand mark was switched from an inline SVG to a PNG <img> pointing at /assets/generated/queen-bee-app-icon.dim_180x180.png with 64x64 sizing and alt text, and favicon links (32x32, 48x48) were added to frontend/index.html. However, the diff does not show the required generated image assets being added under frontend/public/assets/generated, so the static assets requirement cannot be confirmed as implemented.",
+  "missing_requirements": [
+    {
+      "id": "REQ-3",
+      "requirement": "Store the generated branding images as static frontend assets under frontend/public/assets/generated and reference them directly from the UI (do not serve images via the backend).",
+      "reason": "The code references PNGs under /assets/generated, but the diff shows no new files added, so there is no evidence the required images were actually added to frontend/public/assets/generated.",
+      "evidence": [
+        "File diff summary: \"Added: 0\" (no files added)",
+        "frontend/src/components/BrandHeader.tsx (references /assets/generated/queen-bee-app-icon.dim_180x180.png)",
+        "frontend/index.html (references /assets/generated/queen-bee-favicon.dim_32x32.png and /assets/generated/queen-bee-favicon.dim_48x48.png)"
+      ]
+    }
+  ],
+  "hallucinated_features": [],
+  "confidence": 0.7,
+  "changed_files": [
+    "frontend-file-summaries.txt",
+    "frontend/index.html",
+    "frontend/src/components/BrandHeader.tsx",
+    "project_state.json"
+  ]
+}

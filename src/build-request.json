@@ -1,0 +1,77 @@
+{
+  "kind": "build_request",
+  "title": "Replace app header icon with the attached Queen Bee logo image",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Update the app header brand mark to use the user-provided attached image (\"Queen Bee Guitar Repair 3.png\") instead of the current inline SVG icon, keeping the same visual size (64x64) and layout spacing in the header.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Change icon to picture attached"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The header icon is rendered from a PNG asset (not the inline SVG) and remains 64x64.",
+        "The header text layout and spacing remain unchanged (no visual jump/shift).",
+        "The icon has appropriate alt text in English (e.g., \"Queen Bee Guitar Repair logo\")."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Add and wire up favicon assets derived from the attached logo so the browser tab/favicon reflects the updated branding.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Change icon to picture attached"
+        ]
+      },
+      "acceptanceCriteria": [
+        "At least one favicon link is present in frontend/index.html pointing to a generated favicon PNG in frontend/public/assets/generated/.",
+        "After rebuild, the favicon shown in the browser tab matches the attached logo artwork."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Store the generated branding images as static frontend assets under frontend/public/assets/generated and reference them directly from the UI (do not serve images via the backend).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Change icon to picture attached"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All new/updated images are present under frontend/public/assets/generated.",
+        "The header icon and favicon load from static file paths in the built frontend."
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not modify any files under frontend/src/components/ui (compose them only).",
+    "Do not change backend behavior or data schema for this request."
+  ],
+  "nonGoals": [
+    "No changes to Customers or Invoices features.",
+    "No redesign of colors/typography beyond what is required to swap the icon."
+  ],
+  "imageRequirements": {
+    "required": [
+      "Square favicon image based on the attached crowned bee artwork (queen-bee-favicon.dim_32x32.png)",
+      "Square favicon image based on the attached crowned bee artwork (queen-bee-favicon.dim_48x48.png)",
+      "Square app icon image based on the attached crowned bee artwork (queen-bee-app-icon.dim_180x180.png)"
+    ],
+    "edits": [
+      "Replace the existing logo artwork with the attached crowned bee mark, centered and cleanly cropped for a square logo (queen-bee-guitar-repair-logo.dim_512x512.png > queen-bee-guitar-repair-logo.dim_512x512.png)"
+    ]
+  }
+}

@@ -1,2 +1,3 @@
-# replace-app-header-icon-with-the-attached-queen-bee-logo-image
-Exported from Caffeine project: Replace app header icon with the attached Queen Bee logo image
+## 
+
+To run app build and run docker image: `docker build -t app . docker run -it --network host app`
