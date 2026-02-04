@@ -1,26 +1,44 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-04T22:54:11.654Z",
-  "summary": "Header brand mark was switched from an inline SVG to a PNG <img> pointing at /assets/generated/queen-bee-app-icon.dim_180x180.png with 64x64 sizing and alt text, and favicon links (32x32, 48x48) were added to frontend/index.html. However, the diff does not show the required generated image assets being added under frontend/public/assets/generated, so the static assets requirement cannot be confirmed as implemented.",
+  "generatedAt": "2026-02-04T23:00:45.394Z",
+  "summary": "Diff adds a BootstrapGate and a StartupErrorBoundary to prevent blank-screen startup failures and show user-visible error states. However, the change does not demonstrate removal/replacement of `process.env` usage in the frontend; instead it adds an HTML shim that defines `window.process.env` and injects `II_URL`, which conflicts with the requirement to avoid Node-only env access in browser bundles.",
   "missing_requirements": [
     {
-      "id": "REQ-3",
-      "requirement": "Store the generated branding images as static frontend assets under frontend/public/assets/generated and reference them directly from the UI (do not serve images via the backend).",
-      "reason": "The code references PNGs under /assets/generated, but the diff shows no new files added, so there is no evidence the required images were actually added to frontend/public/assets/generated.",
+      "id": "REQ-1",
+      "requirement": "Investigate and fix the runtime “loading error” that prevents the React app from rendering (startup-time crashes in auth/bootstrap layer) so the app loads to the main route without a blank screen or uncaught exception.",
+      "reason": "The diff shows additional guarding/error UI (BootstrapGate + error boundary) but does not provide evidence that the underlying startup crash/root cause was removed (e.g., the failing initialization code/path was changed). This may still leave uncaught exceptions in console depending on the original cause.",
       "evidence": [
-        "File diff summary: \"Added: 0\" (no files added)",
-        "frontend/src/components/BrandHeader.tsx (references /assets/generated/queen-bee-app-icon.dim_180x180.png)",
-        "frontend/index.html (references /assets/generated/queen-bee-favicon.dim_32x32.png and /assets/generated/queen-bee-favicon.dim_48x48.png)"
+        "frontend/src/App.tsx",
+        "frontend/src/components/BootstrapGate.tsx",
+        "frontend/src/components/StartupErrorBoundary.tsx"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Remove/replace any Node-only environment access that can crash in the browser (notably `process.env` usage in the frontend), ensuring Internet Identity configuration does not reference `process.env.*` at runtime and has a safe fallback II URL when missing.",
+      "reason": "Instead of removing runtime `process.env` usage, the diff adds a bootstrap shim that defines `window.process.env` and sets `window.process.env.II_URL`. There is no evidence that frontend code was updated to stop referencing `process.env` at runtime (hooks are immutable and no other config change is shown).",
+      "evidence": [
+        "frontend/index.html"
       ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.7,
+  "hallucinated_features": [
+    {
+      "description": "Added an index.html \"bootstrap shim\" that defines `window.process = { env: {} }` and sets `window.process.env.II_URL` to a default.",
+      "reason": "This introduces/normalizes `process.env` in the browser rather than removing Node-only env access as requested. The BuildRequest asked to eliminate `process.env` reliance, not to polyfill it.",
+      "evidence": [
+        "frontend/index.html"
+      ]
+    }
+  ],
+  "confidence": 0.72,
   "changed_files": [
     "frontend-file-summaries.txt",
     "frontend/index.html",
-    "frontend/src/components/BrandHeader.tsx",
+    "frontend/src/App.tsx",
+    "frontend/src/components/BootstrapGate.tsx",
+    "frontend/src/components/StartupErrorBoundary.tsx",
     "project_state.json"
   ]
 }

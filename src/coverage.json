@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-04T22:54:11.689Z",
+  "generatedAt": "2026-02-04T23:00:45.431Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -12,18 +12,20 @@
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Update the app header brand mark to use the user-provided attached image (\"Queen Bee Guitar Repair 3.png\") instead of the current inline SVG icon, keeping the same visual size (64x64) and layout spacing in the header.",
+        "summary": "Investigate and fix the runtime “loading error” that prevents the React app from rendering, prioritizing startup-time crashes in the authentication/bootstrap layer (e.g., Internet Identity provider initialization). Ensure the app loads to the main route without a blank screen or uncaught exception.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/BrandHeader.tsx"
+          "frontend/src/components/StartupErrorBoundary.tsx",
+          "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/BrandHeader.tsx"
+          "frontend/src/components/StartupErrorBoundary.tsx",
+          "frontend/src/App.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Add and wire up favicon assets derived from the attached logo so the browser tab/favicon reflects the updated branding.",
+        "summary": "Remove/replace any Node-only environment access that can crash in the browser (notably `process.env` usage in the frontend). Specifically ensure Internet Identity configuration does not reference `process.env.*` at runtime in Vite/React, and provide a safe fallback identity provider URL when configuration is missing.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/index.html"
@@ -34,19 +36,15 @@
       },
       {
         "id": "REQ-3",
-        "summary": "Store the generated branding images as static frontend assets under frontend/public/assets/generated and reference them directly from the UI (do not serve images via the backend).",
+        "summary": "Add a user-visible, non-crashing error presentation for initialization/authentication failures so users are not stuck on an indefinite loading state. Reuse existing UI patterns (e.g., `AsyncState`) to show an actionable message and retry guidance when initialization fails.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/public/assets/generated/queen-bee-favicon.dim_32x32.png",
-          "frontend/public/assets/generated/queen-bee-favicon.dim_48x48.png",
-          "frontend/public/assets/generated/queen-bee-app-icon.dim_180x180.png",
-          "frontend/public/assets/generated/queen-bee-guitar-repair-logo.dim_512x512.png"
+          "frontend/src/components/BootstrapGate.tsx",
+          "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/public/assets/generated/queen-bee-favicon.dim_32x32.png",
-          "frontend/public/assets/generated/queen-bee-favicon.dim_48x48.png",
-          "frontend/public/assets/generated/queen-bee-app-icon.dim_180x180.png",
-          "frontend/public/assets/generated/queen-bee-guitar-repair-logo.dim_512x512.png"
+          "frontend/src/components/BootstrapGate.tsx",
+          "frontend/src/App.tsx"
         ]
       }
     ]
@@ -57,11 +55,9 @@
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/index.html",
-    "frontend/public/assets/generated/queen-bee-app-icon.dim_180x180.png",
-    "frontend/public/assets/generated/queen-bee-favicon.dim_32x32.png",
-    "frontend/public/assets/generated/queen-bee-favicon.dim_48x48.png",
-    "frontend/public/assets/generated/queen-bee-guitar-repair-logo.dim_512x512.png",
-    "frontend/src/components/BrandHeader.tsx",
+    "frontend/src/App.tsx",
+    "frontend/src/components/BootstrapGate.tsx",
+    "frontend/src/components/StartupErrorBoundary.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

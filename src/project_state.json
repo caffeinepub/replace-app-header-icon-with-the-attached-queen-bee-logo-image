@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 11,
+  "projectStateVersion": 15,
   "summary": "ICP canister-based web app scaffolded with Motoko backend and React/Vite frontend, including Internet Identity authentication, core UI shell/branding, and initial Customers and Invoices CRUD-style pages.",
   "existing_features": [
     {
@@ -116,38 +116,31 @@
       "version": 1
     },
     {
-      "id": "feature-update-the-app-header-brand-mark-to-use-the-user-provided-attached-image-queen-bee-guitar-repair-3-png-instead-of-the-current-inline-svg-icon-keeping-the-same-visual-size-64x64-and-layout-spacing-in-the-header",
-      "title": "Update the app header brand mark to use the user-provided attached image (\"Queen Bee Guitar Repair 3.png\") instead of the current inline SVG icon, keeping the same visual size (64x64) and layout spacing in the header.",
+      "id": "feature-investigate-and-fix-the-runtime-loading-error-that-prevents-the-react-app-from-rendering-prioritizing-startup-time-crashes-in-the-authentication-bootstrap-layer-e-g-internet-identity-provider-initialization-ensure-the-app-loads-to-the-main-route-without-a-blank-screen-or-uncaught-exception",
+      "title": "Investigate and fix the runtime “loading error” that prevents the React app from rendering, prioritizing startup-time crashes in the authentication/bootstrap layer (e.g., Internet Identity provider initialization). Ensure the app loads to the main route without a blank screen or uncaught exception.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-and-wire-up-favicon-assets-derived-from-the-attached-logo-so-the-browser-tab-favicon-reflects-the-updated-branding",
-      "title": "Add and wire up favicon assets derived from the attached logo so the browser tab/favicon reflects the updated branding.",
+      "id": "feature-remove-replace-any-node-only-environment-access-that-can-crash-in-the-browser-notably-process-env-usage-in-the-frontend-specifically-ensure-internet-identity-configuration-does-not-reference-process-env-at-runtime-in-vite-react-and-provide-a-safe-fallback-identity-provider-url-when-configuration-is-missing",
+      "title": "Remove/replace any Node-only environment access that can crash in the browser (notably `process.env` usage in the frontend). Specifically ensure Internet Identity configuration does not reference `process.env.*` at runtime in Vite/React, and provide a safe fallback identity provider URL when configuration is missing.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-store-the-generated-branding-images-as-static-frontend-assets-under-frontend-public-assets-generated-and-reference-them-directly-from-the-ui-do-not-serve-images-via-the-backend",
-      "title": "Store the generated branding images as static frontend assets under frontend/public/assets/generated and reference them directly from the UI (do not serve images via the backend).",
+      "id": "feature-add-a-user-visible-non-crashing-error-presentation-for-initialization-authentication-failures-so-users-are-not-stuck-on-an-indefinite-loading-state-reuse-existing-ui-patterns-e-g-asyncstate-to-show-an-actionable-message-and-retry-guidance-when-initialization-fails",
+      "title": "Add a user-visible, non-crashing error presentation for initialization/authentication failures so users are not stuck on an indefinite loading state. Reuse existing UI patterns (e.g., `AsyncState`) to show an actionable message and retry guidance when initialization fails.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     }
   ],
-  "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Update app icon/branding to use the user-provided attached image as the icon.",
-      "reqIds": [],
-      "status": "pending"
-    }
-  ],
+  "new_feature_requests": [],
   "architectural_notes": [
     "Frontend uses React + Vite with Tailwind and shadcn/ui component primitives.",
     "Authentication is handled via Internet Identity; frontend creates an authenticated canister actor for API calls.",
@@ -158,36 +151,31 @@
     "Custom frontend ESLint rules added to enforce stable query keys (no bigint) and required Internet Identity provider configuration.",
     "Image asset tooling added (resize/prune scripts) for generated branding assets in the build template."
   ],
-  "known_issues": [],
-  "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Square favicon image based on the attached crowned bee artwork (queen-bee-favicon.dim_32x32.png)\n- Square favicon image based on the attached crowned bee artwork (queen-bee-favicon.dim_48x48.png)\n- Square app icon image based on the attached crowned bee artwork (queen-bee-app-icon.dim_180x180.png)\n\n## Edit Images\n- Replace the existing logo artwork with the attached crowned bee mark, centered and cleanly cropped for a square logo (queen-bee-guitar-repair-logo.dim_512x512.png > queen-bee-guitar-repair-logo.dim_512x512.png)",
+  "known_issues": [
+    "App has a loading error that needs to be investigated and fixed (details not provided)."
+  ],
+  "isFixRequest": true,
   "generatedImages": [
     {
-      "filename": "queen-bee-favicon.dim_32x32.png",
-      "description": "Square favicon image based on the attached crowned bee artwork",
-      "targetWidth": 32,
-      "targetHeight": 32
-    },
-    {
-      "filename": "queen-bee-favicon.dim_48x48.png",
-      "description": "Square favicon image based on the attached crowned bee artwork",
-      "targetWidth": 48,
-      "targetHeight": 48
-    },
-    {
-      "filename": "queen-bee-app-icon.dim_180x180.png",
-      "description": "Square app icon image based on the attached crowned bee artwork",
+      "filename": "frontend/public/assets/generated/queen-bee-app-icon.dim_180x180.png",
+      "description": "Generated app icon asset",
       "targetWidth": 180,
       "targetHeight": 180
     },
     {
-      "filename": "queen-bee-guitar-repair-logo.dim_512x512.png",
-      "description": "Replace the existing logo artwork with the attached crowned bee mark, centered and cleanly cropped for a square logo",
-      "targetWidth": 512,
-      "targetHeight": 512
+      "filename": "frontend/public/assets/generated/queen-bee-favicon.dim_32x32.png",
+      "description": "Generated favicon asset",
+      "targetWidth": 32,
+      "targetHeight": 32
+    },
+    {
+      "filename": "frontend/public/assets/generated/queen-bee-favicon.dim_48x48.png",
+      "description": "Generated favicon asset",
+      "targetWidth": 48,
+      "targetHeight": 48
     }
   ],
-  "projectName": "Replace app header icon with the attached Queen Bee logo image",
+  "projectName": "Fix app loading error on startup",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

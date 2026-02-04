@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Replace the app header brand icon with the user-provided Queen Bee logo image and update the browser favicon to match.
+**Goal:** Fix the runtime “loading error” that prevents the React app from rendering on startup, and ensure initialization/authentication failures are handled without crashing.
 
 **Planned changes:**
-- Add the provided Queen Bee logo PNG to static frontend assets under `frontend/public/assets/generated/` and render it in the header in place of the current inline SVG, keeping the icon at 64x64 and preserving existing spacing/layout.
-- Add favicon PNG assets derived from the provided logo under `frontend/public/assets/generated/` and link at least one favicon in `frontend/index.html`.
-- Ensure the header icon and favicon are loaded via static asset paths in the built frontend (no backend image serving), and provide appropriate English alt text for the header logo image.
+- Investigate and resolve the startup-time crash in the authentication/bootstrap layer so the app renders the AppShell and default route (Invoices) without a blank screen.
+- Remove/replace any Node-only runtime environment access in the frontend (notably `process.env`), ensuring Internet Identity configuration is browser-safe and includes a safe fallback II URL or a non-crashing missing-config state.
+- Add user-visible, non-crashing error UI for initialization/authentication failures using existing UI patterns (e.g., `AsyncState`), including clear guidance and a retry action/instructions.
 
-**User-visible outcome:** The header brand mark and browser tab/favicon display the Queen Bee Guitar Repair logo artwork, with no visible header layout shift.
+**User-visible outcome:** Opening the app reliably loads to the main route (Invoices) without uncaught console exceptions; if authentication/initialization fails, users see a clear in-app error with retry guidance instead of an indefinite loading/blank screen.

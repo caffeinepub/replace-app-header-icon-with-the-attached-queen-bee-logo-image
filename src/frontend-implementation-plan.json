@@ -1,66 +1,61 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Queen Bee branding icon + favicon swap (static assets)",
+  "title": "Fix React startup loading error and add resilient initialization UX",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Replace the header inline SVG brand mark with the provided Queen Bee logo PNG at the same 64x64 size and unchanged header spacing.",
+      "summary": "Eliminate startup-time crashes in the authentication/bootstrap layer so the app renders AppShell and the default Invoices route without a blank screen.",
       "acceptanceCriteria": [
-        "The header icon is rendered from a PNG asset (not the inline SVG) and remains 64x64.",
-        "The header text layout and spacing remain unchanged (no visual jump/shift).",
-        "The icon has appropriate alt text in English (e.g., \"Queen Bee Guitar Repair logo\")."
+        "Opening the app renders the AppShell and the default route (Invoices page) without a blank screen.",
+        "No uncaught exceptions occur during initial page load in the browser console."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/BrandHeader.tsx",
+          "path": "frontend/src/components/StartupErrorBoundary.tsx",
+          "operation": "create",
+          "description": "Add a lightweight React error boundary that catches unexpected startup/render errors (including auth/bootstrap-related ones) and shows a user-visible, non-crashing fallback UI so the app never stays blank."
+        },
+        {
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Replace the inline <svg> logo with an <img> that loads the static PNG asset from frontend/public/assets/generated/queen-bee-app-icon.dim_180x180.png, keeping the container and layout classes so the rendered size remains 64x64 (h-16 w-16) and spacing is unchanged; include English alt text (e.g., \"Queen Bee Guitar Repair logo\")."
+          "description": "Wrap the root layout tree (ThemeProvider/AppShell/Outlet) with the new StartupErrorBoundary so any uncaught render-time exceptions during initial load are handled and do not prevent the main route from displaying."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Add and wire favicon assets derived from the logo so the browser tab icon reflects the updated branding.",
+      "summary": "Remove/replace Node-only environment access (process.env) from causing browser crashes; provide a safe fallback Internet Identity provider URL when missing.",
       "acceptanceCriteria": [
-        "At least one favicon link is present in frontend/index.html pointing to a generated favicon PNG in frontend/public/assets/generated/.",
-        "After rebuild, the favicon shown in the browser tab matches the attached logo artwork."
+        "Frontend code no longer relies on `process.env` at runtime (e.g., `process.env.II_URL`) in browser bundles.",
+        "If an II URL is not configured, the app still loads and uses a documented safe default (or shows a clear in-app error state without crashing).",
+        "Internet Identity login flow can still be initiated (no immediate error thrown on page load)."
       ],
       "file_operations": [
         {
           "path": "frontend/index.html",
           "operation": "modify",
-          "description": "Add favicon <link> tags in <head> referencing the generated static assets frontend/public/assets/generated/queen-bee-favicon.dim_32x32.png and frontend/public/assets/generated/queen-bee-favicon.dim_48x48.png so the browser tab/favicon uses the updated Queen Bee mark."
+          "description": "Add a minimal pre-React bootstrap shim (executed before /src/main.tsx) that prevents `process is not defined` at module evaluation time and supplies a documented safe default II URL when no configuration is present, ensuring the Internet Identity provider initialization cannot crash on startup."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Store generated branding images under frontend/public/assets/generated and reference them directly from the frontend UI (no backend image serving).",
+      "summary": "Present non-crashing, user-visible error UI for initialization/authentication failures with retry guidance, reusing existing AsyncState patterns.",
       "acceptanceCriteria": [
-        "All new/updated images are present under frontend/public/assets/generated.",
-        "The header icon and favicon load from static file paths in the built frontend."
+        "If Internet Identity initialization fails, the UI shows an error message in the page (not only console) and the app remains interactive.",
+        "The error state includes clear English user-facing text and a retry action or instructions."
       ],
       "file_operations": [
         {
-          "path": "frontend/public/assets/generated/queen-bee-favicon.dim_32x32.png",
+          "path": "frontend/src/components/BootstrapGate.tsx",
           "operation": "create",
-          "description": "Add the generated 32x32 square favicon PNG derived from the attached crowned bee artwork at this exact path so it can be referenced statically by frontend/index.html."
+          "description": "Create a bootstrap/auth gate component that reads Internet Identity initialization/auth status and, on failure, renders an in-page error state using the existing AsyncState component with clear instructions and a retry action (e.g., reload) instead of allowing an indefinite loading/blank experience."
         },
         {
-          "path": "frontend/public/assets/generated/queen-bee-favicon.dim_48x48.png",
-          "operation": "create",
-          "description": "Add the generated 48x48 square favicon PNG derived from the attached crowned bee artwork at this exact path so it can be referenced statically by frontend/index.html."
-        },
-        {
-          "path": "frontend/public/assets/generated/queen-bee-app-icon.dim_180x180.png",
-          "operation": "create",
-          "description": "Add the generated 180x180 square app icon PNG derived from the attached crowned bee artwork at this exact path so it can be referenced statically by the header UI."
-        },
-        {
-          "path": "frontend/public/assets/generated/queen-bee-guitar-repair-logo.dim_512x512.png",
-          "operation": "create",
-          "description": "Add the updated/generated 512x512 square logo PNG (centered, clean crop of the attached crowned bee mark) at this exact path to ensure all branding images live under frontend/public/assets/generated as static assets."
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Integrate BootstrapGate into the root route layout so initialization/auth failures are surfaced within the normal app chrome (AppShell) while keeping navigation and the app interactive. Verify the component's usage instructions before implementing."
         }
       ]
     }

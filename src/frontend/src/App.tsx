@@ -1,19 +1,25 @@
-import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet, useNavigate } from '@tanstack/react-router';
+import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet } from '@tanstack/react-router';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import AppShell from '@/components/AppShell';
+import StartupErrorBoundary from '@/components/StartupErrorBoundary';
+import BootstrapGate from '@/components/BootstrapGate';
 import CustomersPage from '@/features/customers/CustomersPage';
 import InvoicesPage from '@/features/invoices/InvoicesPage';
 import InvoiceDetailPage from '@/features/invoices/InvoiceDetailPage';
 
 const rootRoute = createRootRoute({
   component: () => (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-      <AppShell>
-        <Outlet />
-      </AppShell>
-      <Toaster />
-    </ThemeProvider>
+    <StartupErrorBoundary>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <BootstrapGate>
+          <AppShell>
+            <Outlet />
+          </AppShell>
+        </BootstrapGate>
+        <Toaster />
+      </ThemeProvider>
+    </StartupErrorBoundary>
   ),
 });
 

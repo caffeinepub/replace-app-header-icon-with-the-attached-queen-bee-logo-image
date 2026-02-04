@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-app-header-brand-mark-to-use-the-user-provided-attached-image-queen-bee-guitar-repair-3-png-instead-of-the-current-inline-svg-icon-keeping-the-same-visual-size-64x64-and-layout-spacing-in-the-header",
-      "featureTitle": "Update the app header brand mark to use the user-provided attached image (\"Queen Bee Guitar Repair 3.png\") instead of the current inline SVG icon, keeping the same visual size (64x64) and layout spacing in the header.",
+      "featureId": "feature-investigate-and-fix-the-runtime-loading-error-that-prevents-the-react-app-from-rendering-prioritizing-startup-time-crashes-in-the-authentication-bootstrap-layer-e-g-internet-identity-provider-initialization-ensure-the-app-loads-to-the-main-route-without-a-blank-screen-or-uncaught-exception",
+      "featureTitle": "Investigate and fix the runtime “loading error” that prevents the React app from rendering, prioritizing startup-time crashes in the authentication/bootstrap layer (e.g., Internet Identity provider initialization). Ensure the app loads to the main route without a blank screen or uncaught exception.",
       "files": [
-        "frontend/src/components/BrandHeader.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/components/StartupErrorBoundary.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -20,8 +21,8 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-and-wire-up-favicon-assets-derived-from-the-attached-logo-so-the-browser-tab-favicon-reflects-the-updated-branding",
-      "featureTitle": "Add and wire up favicon assets derived from the attached logo so the browser tab/favicon reflects the updated branding.",
+      "featureId": "feature-remove-replace-any-node-only-environment-access-that-can-crash-in-the-browser-notably-process-env-usage-in-the-frontend-specifically-ensure-internet-identity-configuration-does-not-reference-process-env-at-runtime-in-vite-react-and-provide-a-safe-fallback-identity-provider-url-when-configuration-is-missing",
+      "featureTitle": "Remove/replace any Node-only environment access that can crash in the browser (notably `process.env` usage in the frontend). Specifically ensure Internet Identity configuration does not reference `process.env.*` at runtime in Vite/React, and provide a safe fallback identity provider URL when configuration is missing.",
       "files": [
         "frontend/index.html"
       ],
@@ -38,9 +39,12 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-store-the-generated-branding-images-as-static-frontend-assets-under-frontend-public-assets-generated-and-reference-them-directly-from-the-ui-do-not-serve-images-via-the-backend",
-      "featureTitle": "Store the generated branding images as static frontend assets under frontend/public/assets/generated and reference them directly from the UI (do not serve images via the backend).",
-      "files": [],
+      "featureId": "feature-add-a-user-visible-non-crashing-error-presentation-for-initialization-authentication-failures-so-users-are-not-stuck-on-an-indefinite-loading-state-reuse-existing-ui-patterns-e-g-asyncstate-to-show-an-actionable-message-and-retry-guidance-when-initialization-fails",
+      "featureTitle": "Add a user-visible, non-crashing error presentation for initialization/authentication failures so users are not stuck on an indefinite loading state. Reuse existing UI patterns (e.g., `AsyncState`) to show an actionable message and retry guidance when initialization fails.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/BootstrapGate.tsx"
+      ],
       "components": [
         "core-infrastructure@1.0.2",
         "shadcn-ui@1.0.0",

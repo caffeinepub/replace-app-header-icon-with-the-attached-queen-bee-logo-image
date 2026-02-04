@@ -5,6 +5,17 @@
         <title>Queen Bee Guitar Repair</title>
         <link rel='icon' type='image/png' sizes='32x32' href='/assets/generated/queen-bee-favicon.dim_32x32.png' />
         <link rel='icon' type='image/png' sizes='48x48' href='/assets/generated/queen-bee-favicon.dim_48x48.png' />
+        <script>
+            // Bootstrap shim: prevent "process is not defined" errors
+            // and provide safe defaults for environment variables
+            window.process = window.process || { env: {} };
+            
+            // Provide a safe default Internet Identity URL if not configured
+            // This prevents crashes during Internet Identity provider initialization
+            if (!window.process.env.II_URL) {
+                window.process.env.II_URL = 'https://identity.ic0.app';
+            }
+        </script>
     </head>
     <body>
         <div id='root'></div>

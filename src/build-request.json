@@ -1,77 +1,72 @@
 {
   "kind": "build_request",
-  "title": "Replace app header icon with the attached Queen Bee logo image",
-  "priority": "normal",
+  "title": "Fix app loading error on startup",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the app header brand mark to use the user-provided attached image (\"Queen Bee Guitar Repair 3.png\") instead of the current inline SVG icon, keeping the same visual size (64x64) and layout spacing in the header.",
+      "text": "Investigate and fix the runtime “loading error” that prevents the React app from rendering, prioritizing startup-time crashes in the authentication/bootstrap layer (e.g., Internet Identity provider initialization). Ensure the app loads to the main route without a blank screen or uncaught exception.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-4"
         ],
         "quotes": [
-          "Change icon to picture attached"
+          "Fix loading error"
         ]
       },
       "acceptanceCriteria": [
-        "The header icon is rendered from a PNG asset (not the inline SVG) and remains 64x64.",
-        "The header text layout and spacing remain unchanged (no visual jump/shift).",
-        "The icon has appropriate alt text in English (e.g., \"Queen Bee Guitar Repair logo\")."
+        "Opening the app renders the AppShell and the default route (Invoices page) without a blank screen.",
+        "No uncaught exceptions occur during initial page load in the browser console."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add and wire up favicon assets derived from the attached logo so the browser tab/favicon reflects the updated branding.",
+      "text": "Remove/replace any Node-only environment access that can crash in the browser (notably `process.env` usage in the frontend). Specifically ensure Internet Identity configuration does not reference `process.env.*` at runtime in Vite/React, and provide a safe fallback identity provider URL when configuration is missing.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-4"
         ],
         "quotes": [
-          "Change icon to picture attached"
+          "Fix loading error"
         ]
       },
       "acceptanceCriteria": [
-        "At least one favicon link is present in frontend/index.html pointing to a generated favicon PNG in frontend/public/assets/generated/.",
-        "After rebuild, the favicon shown in the browser tab matches the attached logo artwork."
+        "Frontend code no longer relies on `process.env` at runtime (e.g., `process.env.II_URL`) in browser bundles.",
+        "If an II URL is not configured, the app still loads and uses a documented safe default (or shows a clear in-app error state without crashing).",
+        "Internet Identity login flow can still be initiated (no immediate error thrown on page load)."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Store the generated branding images as static frontend assets under frontend/public/assets/generated and reference them directly from the UI (do not serve images via the backend).",
+      "text": "Add a user-visible, non-crashing error presentation for initialization/authentication failures so users are not stuck on an indefinite loading state. Reuse existing UI patterns (e.g., `AsyncState`) to show an actionable message and retry guidance when initialization fails.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-4"
         ],
         "quotes": [
-          "Change icon to picture attached"
+          "Fix loading error"
         ]
       },
       "acceptanceCriteria": [
-        "All new/updated images are present under frontend/public/assets/generated.",
-        "The header icon and favicon load from static file paths in the built frontend."
+        "If Internet Identity initialization fails, the UI shows an error message in the page (not only console) and the app remains interactive.",
+        "The error state includes clear English user-facing text and a retry action or instructions."
       ]
     }
   ],
   "constraints": [
-    "Do not modify any files under frontend/src/components/ui (compose them only).",
-    "Do not change backend behavior or data schema for this request."
+    "Do not edit files under frontend/src/components/ui (Shadcn components are read-only and must be composed, not modified).",
+    "Do not edit immutable frontend paths: frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx (compose/work around them if changes are needed).",
+    "Backend must remain a single Motoko actor in backend/main.mo; only add migration.mo if state schema changes (not expected for this fix)."
   ],
   "nonGoals": [
-    "No changes to Customers or Invoices features.",
-    "No redesign of colors/typography beyond what is required to swap the icon."
+    "No new product features (dashboards, new pages, new entities) beyond fixing the loading error and improving related error handling.",
+    "No changes to customer/invoice data models or persistence unless the loading error root cause requires it (unlikely)."
   ],
   "imageRequirements": {
-    "required": [
-      "Square favicon image based on the attached crowned bee artwork (queen-bee-favicon.dim_32x32.png)",
-      "Square favicon image based on the attached crowned bee artwork (queen-bee-favicon.dim_48x48.png)",
-      "Square app icon image based on the attached crowned bee artwork (queen-bee-app-icon.dim_180x180.png)"
-    ],
-    "edits": [
-      "Replace the existing logo artwork with the attached crowned bee mark, centered and cleanly cropped for a square logo (queen-bee-guitar-repair-logo.dim_512x512.png > queen-bee-guitar-repair-logo.dim_512x512.png)"
-    ]
+    "required": [],
+    "edits": []
   }
 }

@@ -1,5 +1,5 @@
 {
-  "frontend/src/App.tsx": "Main application component with TanStack Router setup, defining routes for invoices, customers, and invoice details, wrapped with ThemeProvider and Toaster.",
+  "frontend/src/App.tsx": "Main application component with TanStack Router setup, wrapped with StartupErrorBoundary and BootstrapGate to handle initialization errors gracefully, defining routes for invoices, customers, and invoice details.",
   "frontend/src/components/AppShell.tsx": "Application shell layout component providing header with brand, navigation menu, main content area, and footer with attribution.",
   "frontend/src/components/BrandHeader.tsx": "Brand header component displaying the Queen Bee logo PNG image (64x64) and company name with warm amber gradient background.",
   "frontend/src/components/AsyncState.tsx": "Reusable component for handling loading, error, and empty states with consistent UI patterns across the application.",
@@ -17,5 +17,7 @@
   "frontend/src/features/invoices/InvoiceDetailPage.tsx": "Detailed invoice view page showing line items, payment summary, and payment recording functionality.",
   "frontend/src/index.css": "Global styles with warm honey/amber OKLCH color system for light and dark modes, avoiding blue/purple tones.",
   "frontend/tailwind.config.js": "Tailwind configuration with custom color tokens, Inter font family, and extended design system for Queen Bee branding.",
-  "frontend/index.html": "HTML entry point with favicon links referencing the Queen Bee logo assets in multiple sizes."
+  "frontend/index.html": "HTML entry point with bootstrap shim script that prevents process.env runtime errors and provides safe default Internet Identity URL for browser compatibility.",
+  "frontend/src/components/StartupErrorBoundary.tsx": "React error boundary component that catches unexpected startup and render errors, displaying a user-friendly error message with reload action instead of a blank screen.",
+  "frontend/src/components/BootstrapGate.tsx": "Bootstrap gate component that monitors Internet Identity initialization status using isLoginError helper and displays loading or error states using AsyncState, ensuring the app remains interactive during auth failures."
 }
