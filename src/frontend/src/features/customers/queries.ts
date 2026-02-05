@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '@/hooks/useActor';
 import { queryKeys } from '@/api/queryKeys';
 import { normalizeError } from '@/api/backendClient';
-import type { Customer } from '@/backend';
+import type { Customer, CustomerInput } from '@/backend';
 import type { CustomerFormData } from './types';
 
 export function useCustomers() {
@@ -42,6 +42,33 @@ export function useCreateCustomer() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
+    },
+    onError: (error) => {
+      throw new Error(normalizeError(error));
+    },
+  });
+}
+
+export function useUpdateCustomer() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: bigint; data: CustomerFormData }) => {
+      if (!actor) throw new Error('Backend not initialized');
+      
+      const input: CustomerInput = {
+        name: data.name,
+        phone: data.phone,
+        address: data.address,
+        email: data.email,
+      };
+      
+      return actor.updateCustomer(id, input);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.detail(variables.id.toString()) });
     },
     onError: (error) => {
       throw new Error(normalizeError(error));

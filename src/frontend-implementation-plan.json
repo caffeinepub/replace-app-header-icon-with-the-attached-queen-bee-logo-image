@@ -1,61 +1,69 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix React startup loading error and add resilient initialization UX",
+  "title": "Invoice UI branding: add Queen Bee logo + watermark assets and display on invoice detail",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Eliminate startup-time crashes in the authentication/bootstrap layer so the app renders AppShell and the default Invoices route without a blank screen.",
+      "id": "REQ-6",
+      "summary": "Generate and commit invoice logo + watermark static assets from the uploaded Queen Bee image",
       "acceptanceCriteria": [
-        "Opening the app renders the AppShell and the default route (Invoices page) without a blank screen.",
-        "No uncaught exceptions occur during initial page load in the browser console."
+        "Two new static assets exist in frontend/public/assets/generated and are committed: (1) an invoice logo image suitable for headers, and (2) a watermark image suitable for use as a faint background.",
+        "Assets are optimized for web use (transparent background preserved if present; otherwise background is removed/converted to transparent where possible).",
+        "Assets can be referenced via absolute paths like /assets/generated/<filename>."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/StartupErrorBoundary.tsx",
+          "path": "frontend/public/assets/generated/queen-bee-invoice-logo.dim_512x512.png",
           "operation": "create",
-          "description": "Add a lightweight React error boundary that catches unexpected startup/render errors (including auth/bootstrap-related ones) and shows a user-visible, non-crashing fallback UI so the app never stays blank."
+          "description": "Add the generated invoice logo asset extracted from the uploaded \"Queen Bee Guitar Repair 3-1.png\" with transparent background and high-contrast black styling, optimized for web use."
         },
         {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wrap the root layout tree (ThemeProvider/AppShell/Outlet) with the new StartupErrorBoundary so any uncaught render-time exceptions during initial load are handled and do not prevent the main route from displaying."
+          "path": "frontend/public/assets/generated/queen-bee-invoice-watermark.dim_1200x1200.png",
+          "operation": "create",
+          "description": "Add the generated invoice watermark asset (faint, transparent) derived from the same mark, optimized for background use and web delivery."
         }
       ]
     },
     {
-      "id": "REQ-2",
-      "summary": "Remove/replace Node-only environment access (process.env) from causing browser crashes; provide a safe fallback Internet Identity provider URL when missing.",
+      "id": "REQ-7",
+      "summary": "Display the new invoice logo near the invoice heading on invoice detail view",
       "acceptanceCriteria": [
-        "Frontend code no longer relies on `process.env` at runtime (e.g., `process.env.II_URL`) in browser bundles.",
-        "If an II URL is not configured, the app still loads and uses a documented safe default (or shows a clear in-app error state without crashing).",
-        "Internet Identity login flow can still be initiated (no immediate error thrown on page load)."
+        "InvoiceDetailPage displays the new logo near the invoice heading (e.g., next to \"Invoice #....\") without layout breakage on mobile and desktop.",
+        "Logo includes appropriate alt text in English.",
+        "Logo renders crisply (no obvious distortion) and does not overlap other UI elements."
       ],
       "file_operations": [
         {
-          "path": "frontend/index.html",
+          "path": "frontend/src/config/invoiceAssets.ts",
+          "operation": "create",
+          "description": "Add a small config module exporting absolute static-asset paths and alt text for the invoice logo/watermark (e.g., referencing frontend/public/assets/generated/queen-bee-invoice-logo.dim_512x512.png)."
+        },
+        {
+          "path": "frontend/src/features/invoices/InvoiceDetailPage.tsx",
           "operation": "modify",
-          "description": "Add a minimal pre-React bootstrap shim (executed before /src/main.tsx) that prevents `process is not defined` at module evaluation time and supplies a documented safe default II URL when no configuration is present, ensuring the Internet Identity provider initialization cannot crash on startup."
+          "description": "Render the invoice logo image (from invoiceAssets config) next to the invoice heading in both the authenticated and sign-in-required header blocks; ensure responsive sizing, consistent alignment, and English alt text."
         }
       ]
     },
     {
-      "id": "REQ-3",
-      "summary": "Present non-crashing, user-visible error UI for initialization/authentication failures with retry guidance, reusing existing AsyncState patterns.",
+      "id": "REQ-8",
+      "summary": "Add a faint, non-interactive watermark behind the invoice detail content area (line items + totals)",
       "acceptanceCriteria": [
-        "If Internet Identity initialization fails, the UI shows an error message in the page (not only console) and the app remains interactive.",
-        "The error state includes clear English user-facing text and a retry action or instructions."
+        "InvoiceDetailPage shows the watermark behind the invoice content area with low opacity and non-intrusive positioning (e.g., centered or bottom-right).",
+        "Watermark is non-interactive (does not capture clicks) and does not interfere with scrolling or dialogs.",
+        "Text contrast and table readability remain acceptable in both light and dark themes.",
+        "If the user prints the page (browser print), the watermark remains faint and positioned sensibly (no tiling artifacts)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/BootstrapGate.tsx",
-          "operation": "create",
-          "description": "Create a bootstrap/auth gate component that reads Internet Identity initialization/auth status and, on failure, renders an in-page error state using the existing AsyncState component with clear instructions and a retry action (e.g., reload) instead of allowing an indefinite loading/blank experience."
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add a reusable CSS class (e.g., using a ::before pseudo-element) to paint a single, no-repeat background watermark image using frontend/public/assets/generated/queen-bee-invoice-watermark.dim_1200x1200.png with pointer-events disabled, low opacity, sensible positioning, and print-specific adjustments to avoid tiling and preserve faintness in print."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/features/invoices/InvoiceDetailPage.tsx",
           "operation": "modify",
-          "description": "Integrate BootstrapGate into the root route layout so initialization/auth failures are surfaced within the normal app chrome (AppShell) while keeping navigation and the app interactive. Verify the component's usage instructions before implementing."
+          "description": "Apply the watermark wrapper class to the invoice main content area for line items + totals (the Line Items card content region), ensuring the watermark stays behind all text/controls and does not affect interactions or layout."
         }
       ]
     }

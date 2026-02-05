@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-04T23:00:45.431Z",
+  "generatedAt": "2026-02-05T12:59:34.834Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -11,40 +11,42 @@
     "implemented": 3,
     "items": [
       {
-        "id": "REQ-1",
-        "summary": "Investigate and fix the runtime “loading error” that prevents the React app from rendering, prioritizing startup-time crashes in the authentication/bootstrap layer (e.g., Internet Identity provider initialization). Ensure the app loads to the main route without a blank screen or uncaught exception.",
+        "id": "REQ-6",
+        "summary": "Create invoice branding image assets from the uploaded image (\"Queen Bee Guitar Repair 3-1.png\") and add them as static frontend assets under frontend/public/assets/generated.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/StartupErrorBoundary.tsx",
-          "frontend/src/App.tsx"
+          "frontend/public/assets/generated/queen-bee-invoice-logo.dim_512x512.png",
+          "frontend/public/assets/generated/queen-bee-invoice-watermark.dim_1200x1200.png"
         ],
         "matchedFiles": [
-          "frontend/src/components/StartupErrorBoundary.tsx",
-          "frontend/src/App.tsx"
+          "frontend/public/assets/generated/queen-bee-invoice-logo.dim_512x512.png",
+          "frontend/public/assets/generated/queen-bee-invoice-watermark.dim_1200x1200.png"
         ]
       },
       {
-        "id": "REQ-2",
-        "summary": "Remove/replace any Node-only environment access that can crash in the browser (notably `process.env` usage in the frontend). Specifically ensure Internet Identity configuration does not reference `process.env.*` at runtime in Vite/React, and provide a safe fallback identity provider URL when configuration is missing.",
+        "id": "REQ-7",
+        "summary": "Show the new invoice logo image on invoice screens (at minimum the invoice detail view) in a clear, consistent position near the invoice title/identifier.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/index.html"
+          "frontend/src/config/invoiceAssets.ts",
+          "frontend/src/features/invoices/InvoiceDetailPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/index.html"
+          "frontend/src/config/invoiceAssets.ts",
+          "frontend/src/features/invoices/InvoiceDetailPage.tsx"
         ]
       },
       {
-        "id": "REQ-3",
-        "summary": "Add a user-visible, non-crashing error presentation for initialization/authentication failures so users are not stuck on an indefinite loading state. Reuse existing UI patterns (e.g., `AsyncState`) to show an actionable message and retry guidance when initialization fails.",
+        "id": "REQ-8",
+        "summary": "Add a faint watermark using the new watermark asset to the invoice detail view’s main invoice content area (line items + totals) such that it stays behind text and controls and does not reduce readability.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/BootstrapGate.tsx",
-          "frontend/src/App.tsx"
+          "frontend/src/index.css",
+          "frontend/src/features/invoices/InvoiceDetailPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/BootstrapGate.tsx",
-          "frontend/src/App.tsx"
+          "frontend/src/index.css",
+          "frontend/src/features/invoices/InvoiceDetailPage.tsx"
         ]
       }
     ]
@@ -54,10 +56,11 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/index.html",
-    "frontend/src/App.tsx",
-    "frontend/src/components/BootstrapGate.tsx",
-    "frontend/src/components/StartupErrorBoundary.tsx",
+    "frontend/public/assets/generated/queen-bee-invoice-logo.dim_512x512.png",
+    "frontend/public/assets/generated/queen-bee-invoice-watermark.dim_1200x1200.png",
+    "frontend/src/config/invoiceAssets.ts",
+    "frontend/src/features/invoices/InvoiceDetailPage.tsx",
+    "frontend/src/index.css",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

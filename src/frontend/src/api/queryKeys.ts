@@ -7,4 +7,8 @@ export const queryKeys = {
     all: ['invoices'] as const,
     detail: (id: string) => ['invoices', id] as const,
   },
+  services: {
+    all: ['services'] as const,
+    detail: (id: string) => ['services', id] as const,
+  },
 };

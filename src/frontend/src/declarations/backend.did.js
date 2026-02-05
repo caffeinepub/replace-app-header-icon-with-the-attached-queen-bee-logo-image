@@ -8,19 +8,61 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const _CaffeineStorageCreateCertificateResult = IDL.Record({
+  'method' : IDL.Text,
+  'blob_hash' : IDL.Text,
+});
+export const _CaffeineStorageRefillInformation = IDL.Record({
+  'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+});
+export const _CaffeineStorageRefillResult = IDL.Record({
+  'success' : IDL.Opt(IDL.Bool),
+  'topped_up_amount' : IDL.Opt(IDL.Nat),
+});
 export const PhoneNumber = IDL.Text;
 export const Address = IDL.Text;
 export const Email = IDL.Text;
 export const CustomerId = IDL.Nat;
+export const InvoiceId = IDL.Nat;
+export const PhotoId = IDL.Text;
+export const UserRole = IDL.Variant({
+  'admin' : IDL.Null,
+  'user' : IDL.Null,
+  'guest' : IDL.Null,
+});
+export const CreateServiceInput = IDL.Record({
+  'service' : IDL.Opt(IDL.Text),
+  'serviceType' : IDL.Opt(IDL.Text),
+  'name' : IDL.Text,
+  'notes' : IDL.Opt(IDL.Text),
+  'price' : IDL.Opt(IDL.Nat),
+});
+export const ServiceId = IDL.Nat;
+export const Service = IDL.Record({
+  'id' : ServiceId,
+  'service' : IDL.Opt(IDL.Text),
+  'serviceType' : IDL.Opt(IDL.Text),
+  'name' : IDL.Text,
+  'notes' : IDL.Opt(IDL.Text),
+  'price' : IDL.Opt(IDL.Nat),
+});
+export const BulkImportResult = IDL.Record({
+  'id' : IDL.Opt(IDL.Nat),
+  'service' : IDL.Opt(Service),
+  'message' : IDL.Opt(IDL.Text),
+  'isSuccess' : IDL.Bool,
+  'input' : IDL.Opt(CreateServiceInput),
+});
 export const Description = IDL.Text;
+export const Discount = IDL.Nat;
 export const Quantity = IDL.Nat;
 export const Price = IDL.Nat;
 export const InvoiceLineItem = IDL.Record({
   'description' : Description,
+  'discount' : Discount,
   'quantity' : Quantity,
   'unitPrice' : Price,
 });
-export const InvoiceId = IDL.Nat;
 export const Name = IDL.Text;
 export const Customer = IDL.Record({
   'id' : CustomerId,
@@ -29,19 +71,76 @@ export const Customer = IDL.Record({
   'address' : Address,
   'phone' : PhoneNumber,
 });
+export const Photo = IDL.Record({
+  'id' : PhotoId,
+  'contentType' : IDL.Text,
+  'filename' : IDL.Opt(IDL.Text),
+  'blobId' : IDL.Text,
+});
 export const Invoice = IDL.Record({
   'id' : InvoiceId,
+  'beforePhotos' : IDL.Vec(Photo),
+  'afterPhotos' : IDL.Vec(Photo),
   'isPaid' : IDL.Bool,
   'amountPaid' : IDL.Nat,
   'customerId' : CustomerId,
   'amountDue' : IDL.Nat,
   'items' : IDL.Vec(InvoiceLineItem),
 });
+export const UserProfile = IDL.Record({ 'name' : IDL.Text });
+export const CustomerInput = IDL.Record({
+  'name' : Name,
+  'email' : Email,
+  'address' : Address,
+  'phone' : PhoneNumber,
+});
+export const InvoiceInput = IDL.Record({
+  'customerId' : CustomerId,
+  'items' : IDL.Vec(InvoiceLineItem),
+});
 
 export const idlService = IDL.Service({
+  '_caffeineStorageBlobIsLive' : IDL.Func(
+      [IDL.Vec(IDL.Nat8)],
+      [IDL.Bool],
+      ['query'],
+    ),
+  '_caffeineStorageBlobsToDelete' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      ['query'],
+    ),
+  '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      [],
+      [],
+    ),
+  '_caffeineStorageCreateCertificate' : IDL.Func(
+      [IDL.Text],
+      [_CaffeineStorageCreateCertificateResult],
+      [],
+    ),
+  '_caffeineStorageRefillCashier' : IDL.Func(
+      [IDL.Opt(_CaffeineStorageRefillInformation)],
+      [_CaffeineStorageRefillResult],
+      [],
+    ),
+  '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
+  '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'addCustomer' : IDL.Func(
       [IDL.Text, PhoneNumber, Address, Email],
       [CustomerId],
+      [],
+    ),
+  'addInvoicePhoto' : IDL.Func(
+      [InvoiceId, PhotoId, IDL.Bool, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
+      [],
+      [],
+    ),
+  'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'bulkImportServices' : IDL.Func(
+      [IDL.Vec(CreateServiceInput)],
+      [IDL.Vec(BulkImportResult)],
       [],
     ),
   'createInvoice' : IDL.Func(
@@ -49,29 +148,86 @@ export const idlService = IDL.Service({
       [InvoiceId],
       [],
     ),
+  'createService' : IDL.Func([CreateServiceInput], [ServiceId], []),
   'getAllCustomers' : IDL.Func([], [IDL.Vec(Customer)], ['query']),
   'getAllInvoices' : IDL.Func([], [IDL.Vec(Invoice)], ['query']),
+  'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
+  'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getCustomer' : IDL.Func([CustomerId], [IDL.Opt(Customer)], ['query']),
   'getInvoice' : IDL.Func([InvoiceId], [IDL.Opt(Invoice)], ['query']),
+  'getUserProfile' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Opt(UserProfile)],
+      ['query'],
+    ),
+  'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'listServices' : IDL.Func([], [IDL.Vec(Service)], ['query']),
   'recordPayment' : IDL.Func([InvoiceId, IDL.Nat], [IDL.Bool], []),
+  'removeInvoicePhoto' : IDL.Func([InvoiceId, PhotoId, IDL.Bool], [], []),
+  'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'updateCustomer' : IDL.Func([CustomerId, CustomerInput], [], []),
+  'updateInvoice' : IDL.Func([InvoiceId, InvoiceInput], [], []),
+  'updateService' : IDL.Func([ServiceId, CreateServiceInput], [], []),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const _CaffeineStorageCreateCertificateResult = IDL.Record({
+    'method' : IDL.Text,
+    'blob_hash' : IDL.Text,
+  });
+  const _CaffeineStorageRefillInformation = IDL.Record({
+    'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+  });
+  const _CaffeineStorageRefillResult = IDL.Record({
+    'success' : IDL.Opt(IDL.Bool),
+    'topped_up_amount' : IDL.Opt(IDL.Nat),
+  });
   const PhoneNumber = IDL.Text;
   const Address = IDL.Text;
   const Email = IDL.Text;
   const CustomerId = IDL.Nat;
+  const InvoiceId = IDL.Nat;
+  const PhotoId = IDL.Text;
+  const UserRole = IDL.Variant({
+    'admin' : IDL.Null,
+    'user' : IDL.Null,
+    'guest' : IDL.Null,
+  });
+  const CreateServiceInput = IDL.Record({
+    'service' : IDL.Opt(IDL.Text),
+    'serviceType' : IDL.Opt(IDL.Text),
+    'name' : IDL.Text,
+    'notes' : IDL.Opt(IDL.Text),
+    'price' : IDL.Opt(IDL.Nat),
+  });
+  const ServiceId = IDL.Nat;
+  const Service = IDL.Record({
+    'id' : ServiceId,
+    'service' : IDL.Opt(IDL.Text),
+    'serviceType' : IDL.Opt(IDL.Text),
+    'name' : IDL.Text,
+    'notes' : IDL.Opt(IDL.Text),
+    'price' : IDL.Opt(IDL.Nat),
+  });
+  const BulkImportResult = IDL.Record({
+    'id' : IDL.Opt(IDL.Nat),
+    'service' : IDL.Opt(Service),
+    'message' : IDL.Opt(IDL.Text),
+    'isSuccess' : IDL.Bool,
+    'input' : IDL.Opt(CreateServiceInput),
+  });
   const Description = IDL.Text;
+  const Discount = IDL.Nat;
   const Quantity = IDL.Nat;
   const Price = IDL.Nat;
   const InvoiceLineItem = IDL.Record({
     'description' : Description,
+    'discount' : Discount,
     'quantity' : Quantity,
     'unitPrice' : Price,
   });
-  const InvoiceId = IDL.Nat;
   const Name = IDL.Text;
   const Customer = IDL.Record({
     'id' : CustomerId,
@@ -80,19 +236,76 @@ export const idlFactory = ({ IDL }) => {
     'address' : Address,
     'phone' : PhoneNumber,
   });
+  const Photo = IDL.Record({
+    'id' : PhotoId,
+    'contentType' : IDL.Text,
+    'filename' : IDL.Opt(IDL.Text),
+    'blobId' : IDL.Text,
+  });
   const Invoice = IDL.Record({
     'id' : InvoiceId,
+    'beforePhotos' : IDL.Vec(Photo),
+    'afterPhotos' : IDL.Vec(Photo),
     'isPaid' : IDL.Bool,
     'amountPaid' : IDL.Nat,
     'customerId' : CustomerId,
     'amountDue' : IDL.Nat,
     'items' : IDL.Vec(InvoiceLineItem),
   });
+  const UserProfile = IDL.Record({ 'name' : IDL.Text });
+  const CustomerInput = IDL.Record({
+    'name' : Name,
+    'email' : Email,
+    'address' : Address,
+    'phone' : PhoneNumber,
+  });
+  const InvoiceInput = IDL.Record({
+    'customerId' : CustomerId,
+    'items' : IDL.Vec(InvoiceLineItem),
+  });
   
   return IDL.Service({
+    '_caffeineStorageBlobIsLive' : IDL.Func(
+        [IDL.Vec(IDL.Nat8)],
+        [IDL.Bool],
+        ['query'],
+      ),
+    '_caffeineStorageBlobsToDelete' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        ['query'],
+      ),
+    '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        [],
+        [],
+      ),
+    '_caffeineStorageCreateCertificate' : IDL.Func(
+        [IDL.Text],
+        [_CaffeineStorageCreateCertificateResult],
+        [],
+      ),
+    '_caffeineStorageRefillCashier' : IDL.Func(
+        [IDL.Opt(_CaffeineStorageRefillInformation)],
+        [_CaffeineStorageRefillResult],
+        [],
+      ),
+    '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
+    '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'addCustomer' : IDL.Func(
         [IDL.Text, PhoneNumber, Address, Email],
         [CustomerId],
+        [],
+      ),
+    'addInvoicePhoto' : IDL.Func(
+        [InvoiceId, PhotoId, IDL.Bool, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
+        [],
+        [],
+      ),
+    'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'bulkImportServices' : IDL.Func(
+        [IDL.Vec(CreateServiceInput)],
+        [IDL.Vec(BulkImportResult)],
         [],
       ),
     'createInvoice' : IDL.Func(
@@ -100,11 +313,26 @@ export const idlFactory = ({ IDL }) => {
         [InvoiceId],
         [],
       ),
+    'createService' : IDL.Func([CreateServiceInput], [ServiceId], []),
     'getAllCustomers' : IDL.Func([], [IDL.Vec(Customer)], ['query']),
     'getAllInvoices' : IDL.Func([], [IDL.Vec(Invoice)], ['query']),
+    'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
+    'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getCustomer' : IDL.Func([CustomerId], [IDL.Opt(Customer)], ['query']),
     'getInvoice' : IDL.Func([InvoiceId], [IDL.Opt(Invoice)], ['query']),
+    'getUserProfile' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(UserProfile)],
+        ['query'],
+      ),
+    'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'listServices' : IDL.Func([], [IDL.Vec(Service)], ['query']),
     'recordPayment' : IDL.Func([InvoiceId, IDL.Nat], [IDL.Bool], []),
+    'removeInvoicePhoto' : IDL.Func([InvoiceId, PhotoId, IDL.Bool], [], []),
+    'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'updateCustomer' : IDL.Func([CustomerId, CustomerInput], [], []),
+    'updateInvoice' : IDL.Func([InvoiceId, InvoiceInput], [], []),
+    'updateService' : IDL.Func([ServiceId, CreateServiceInput], [], []),
   });
 };
 

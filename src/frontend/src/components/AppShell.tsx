@@ -2,7 +2,7 @@ import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import BrandHeader from '@/components/BrandHeader';
-import { Users, FileText } from 'lucide-react';
+import { Users, FileText, Wrench } from 'lucide-react';
 import { SiCaffeine } from 'react-icons/si';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -18,7 +18,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4 py-3">
           <div className="flex gap-2">
             <Button
-              variant={currentPath.startsWith('/invoices') || currentPath === '/' ? 'default' : 'ghost'}
+              variant={currentPath.startsWith('/invoices') ? 'default' : 'ghost'}
               onClick={() => navigate({ to: '/invoices' })}
               className="gap-2"
             >
@@ -32,6 +32,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             >
               <Users className="h-4 w-4" />
               Customers
+            </Button>
+            <Button
+              variant={currentPath.startsWith('/services') ? 'default' : 'ghost'}
+              onClick={() => navigate({ to: '/services' })}
+              className="gap-2"
+            >
+              <Wrench className="h-4 w-4" />
+              Services
             </Button>
           </div>
         </div>

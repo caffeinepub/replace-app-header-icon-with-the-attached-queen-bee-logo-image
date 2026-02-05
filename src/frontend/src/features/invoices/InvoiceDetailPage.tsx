@@ -7,22 +7,34 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, DollarSign, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ArrowLeft, DollarSign, Loader2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import AsyncState from '@/components/AsyncState';
-import { useInvoice, useCustomers, useRecordPayment } from './queries';
-import { formatCurrency, parseCurrency } from './types';
+import SignInRequiredState from './SignInRequiredState';
+import InvoiceForm from './InvoiceForm';
+import { useInvoice, useCustomers, useRecordPayment, useAddInvoicePhoto, useRemoveInvoicePhoto } from './queries';
+import { useAuthStatus } from '@/hooks/useAuthStatus';
+import { formatCurrency, parseCurrency, formatPercent } from './types';
+import { BUSINESS_ADDRESS, PAYMENT_INSTRUCTIONS, TEXT_NUMBER } from '@/config/invoiceBranding';
+import { INVOICE_LOGO } from '@/config/invoiceAssets';
+import InvoicePhotosSection from './InvoicePhotosSection';
+import type { Invoice } from '@/backend';
 
 export default function InvoiceDetailPage() {
   const { invoiceId } = useParams({ from: '/invoices/$invoiceId' });
   const navigate = useNavigate();
   const id = BigInt(invoiceId);
   
+  const { isAuthenticated, isInitializing } = useAuthStatus();
   const { data: invoice, isLoading, isError, error, refetch } = useInvoice(id);
   const { data: customers } = useCustomers();
   const recordPayment = useRecordPayment();
+  const addPhoto = useAddInvoicePhoto();
+  const removePhoto = useRemoveInvoicePhoto();
   
   const [paymentAmount, setPaymentAmount] = useState('');
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const customer = customers?.find((c) => c.id === invoice?.customerId);
 
@@ -50,18 +62,88 @@ export default function InvoiceDetailPage() {
     }
   };
 
+  const handleUploadPhoto = (isBefore: boolean) => {
+    return async (blobId: string, filename: string, contentType: string) => {
+      if (!invoice) return;
+      
+      const photoId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      await addPhoto.mutateAsync({
+        invoiceId: invoice.id,
+        photoId,
+        isBefore,
+        blobId,
+        filename,
+        contentType,
+      });
+    };
+  };
+
+  const handleRemovePhoto = (isBefore: boolean) => {
+    return async (photoId: string) => {
+      if (!invoice) return;
+      
+      await removePhoto.mutateAsync({
+        invoiceId: invoice.id,
+        photoId,
+        isBefore,
+      });
+    };
+  };
+
+  const handleEditSuccess = () => {
+    setIsEditDialogOpen(false);
+  };
+
+  // Show sign-in required state when not authenticated
+  if (!isInitializing && !isAuthenticated) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/invoices' })}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <img 
+            src={INVOICE_LOGO.path} 
+            alt={INVOICE_LOGO.alt}
+            className="h-12 w-12 object-contain"
+          />
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">
+              Invoice #{invoiceId.padStart(4, '0')}
+            </h2>
+            <p className="text-muted-foreground">View invoice details and record payments</p>
+          </div>
+        </div>
+        <SignInRequiredState />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/invoices' })}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">
-            Invoice #{invoiceId.padStart(4, '0')}
-          </h2>
-          <p className="text-muted-foreground">View invoice details and record payments</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/invoices' })}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <img 
+            src={INVOICE_LOGO.path} 
+            alt={INVOICE_LOGO.alt}
+            className="h-12 w-12 object-contain"
+          />
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">
+              Invoice #{invoiceId.padStart(4, '0')}
+            </h2>
+            <p className="text-muted-foreground">View invoice details and record payments</p>
+          </div>
         </div>
+        {invoice && (
+          <Button onClick={() => setIsEditDialogOpen(true)} className="gap-2">
+            <Pencil className="h-4 w-4" />
+            Edit Invoice
+          </Button>
+        )}
       </div>
 
       <AsyncState
@@ -95,6 +177,18 @@ export default function InvoiceDetailPage() {
                       </div>
                     )}
                   </div>
+
+                  <Separator />
+
+                  <div>
+                    <Label className="text-muted-foreground">Business Address</Label>
+                    <p className="text-sm mt-1">{BUSINESS_ADDRESS}</p>
+                    {TEXT_NUMBER && (
+                      <p className="text-sm mt-1">
+                        <span className="font-medium">Text:</span> {TEXT_NUMBER}
+                      </p>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -103,37 +197,44 @@ export default function InvoiceDetailPage() {
                   <CardTitle>Line Items</CardTitle>
                   <CardDescription>{invoice.items.length} item(s)</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="invoice-watermark-container">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>Description</TableHead>
-                        <TableHead className="text-right">Quantity</TableHead>
+                        <TableHead className="text-right">Hourly</TableHead>
                         <TableHead className="text-right">Unit Price</TableHead>
+                        <TableHead className="text-right">Discount %</TableHead>
                         <TableHead className="text-right">Total</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {invoice.items.map((item, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{item.description}</TableCell>
-                          <TableCell className="text-right">{item.quantity.toString()}</TableCell>
-                          <TableCell className="text-right">
-                            {formatCurrency(item.unitPrice)}
-                          </TableCell>
-                          <TableCell className="text-right font-medium">
-                            {formatCurrency(item.unitPrice * item.quantity)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {invoice.items.map((item, index) => {
+                        const subtotal = item.unitPrice * item.quantity;
+                        // Calculate discount amount using percentage: floor(subtotal × discount / 100)
+                        const discountAmount = subtotal * item.discount / 100n;
+                        const total = subtotal > discountAmount ? subtotal - discountAmount : 0n;
+                        
+                        return (
+                          <TableRow key={index}>
+                            <TableCell>{item.description}</TableCell>
+                            <TableCell className="text-right">{item.quantity.toString()}</TableCell>
+                            <TableCell className="text-right">
+                              {formatCurrency(item.unitPrice)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {item.discount > 0n ? formatPercent(item.discount) : '—'}
+                            </TableCell>
+                            <TableCell className="text-right font-medium">
+                              {formatCurrency(total)}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                   <Separator className="my-4" />
                   <div className="space-y-2">
-                    <div className="flex justify-between text-lg">
-                      <span className="font-medium">Subtotal:</span>
-                      <span>{formatCurrency(invoice.amountDue)}</span>
-                    </div>
                     <div className="flex justify-between text-2xl font-bold">
                       <span>Total:</span>
                       <span>{formatCurrency(invoice.amountDue)}</span>
@@ -141,6 +242,24 @@ export default function InvoiceDetailPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              <InvoicePhotosSection
+                title="Before Photos"
+                description="Photos taken before the repair work"
+                photos={invoice.beforePhotos}
+                onUpload={handleUploadPhoto(true)}
+                onRemove={handleRemovePhoto(true)}
+                isUploading={addPhoto.isPending}
+              />
+
+              <InvoicePhotosSection
+                title="After Photos"
+                description="Photos taken after the repair work"
+                photos={invoice.afterPhotos}
+                onUpload={handleUploadPhoto(false)}
+                onRemove={handleRemovePhoto(false)}
+                isUploading={addPhoto.isPending}
+              />
             </div>
 
             <div className="space-y-6">
@@ -167,6 +286,13 @@ export default function InvoiceDetailPage() {
                         {formatCurrency(invoice.amountDue - invoice.amountPaid)}
                       </span>
                     </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <Label className="text-muted-foreground text-xs">Payment Instructions</Label>
+                    <p className="text-sm mt-2 leading-relaxed">{PAYMENT_INSTRUCTIONS}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -209,6 +335,24 @@ export default function InvoiceDetailPage() {
           </div>
         )}
       </AsyncState>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Invoice</DialogTitle>
+            <DialogDescription>
+              Update the customer and line items for this invoice
+            </DialogDescription>
+          </DialogHeader>
+          {invoice && (
+            <InvoiceForm
+              onSuccess={handleEditSuccess}
+              initialData={invoice}
+              invoiceId={invoice.id}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 15,
-  "summary": "ICP canister-based web app scaffolded with Motoko backend and React/Vite frontend, including Internet Identity authentication, core UI shell/branding, and initial Customers and Invoices CRUD-style pages.",
+  "projectStateVersion": 80,
+  "summary": "ICP canister-based web app scaffolded with Motoko backend and React/Vite frontend, including Internet Identity authentication, core UI shell/branding, Customers/Invoices/Services CRUD-style pages with backend access-control/authorization support, updated Services data model/table columns and edit flow with backwards-compatible bulk import mapping, plus invoice photo attachment support backed by a Motoko blob-storage module.",
   "existing_features": [
     {
       "id": "IF-1",
@@ -116,66 +116,156 @@
       "version": 1
     },
     {
-      "id": "feature-investigate-and-fix-the-runtime-loading-error-that-prevents-the-react-app-from-rendering-prioritizing-startup-time-crashes-in-the-authentication-bootstrap-layer-e-g-internet-identity-provider-initialization-ensure-the-app-loads-to-the-main-route-without-a-blank-screen-or-uncaught-exception",
-      "title": "Investigate and fix the runtime “loading error” that prevents the React app from rendering, prioritizing startup-time crashes in the authentication/bootstrap layer (e.g., Internet Identity provider initialization). Ensure the app loads to the main route without a blank screen or uncaught exception.",
+      "id": "IF-11",
+      "title": "Backend data migration support (Motoko)",
+      "synonyms": [
+        "migration.mo",
+        "schema migration",
+        "upgrade hooks"
+      ],
+      "description": "Introduced a Motoko migration module to support canister state evolution across upgrades (structured migration path alongside main canister logic).",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-12",
+      "title": "Services feature pages and form",
+      "synonyms": [
+        "ServicesPage",
+        "ServiceItemForm"
+      ],
+      "description": "Initial Services feature implementation including types, queries, list page and create/edit form UI (mirrors Customers/Invoices feature structure).",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-13",
+      "title": "Backend authorization and access control module",
+      "synonyms": [
+        "access control",
+        "authorization mixin",
+        "ACL"
+      ],
+      "description": "Motoko backend authorization layer (authorization mixin + access-control module) integrated into main canister to enforce privileged operations and support future role/permission expansion.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-14",
+      "title": "Services bulk import (UI + parsing)",
+      "synonyms": [
+        "ServiceBulkImportDialog",
+        "service import CSV/TSV"
+      ],
+      "description": "Adds a bulk import dialog for Services along with client-side parsing utilities to ingest multiple service items in one flow.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-15",
+      "title": "Customer detail dialog UI",
+      "synonyms": [
+        "CustomerDetailDialog"
+      ],
+      "description": "Adds a customer detail dialog/modal to view customer information from the Customers feature UI.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-16",
+      "title": "Services editing + expanded Service fields (Name, Service Type, Price, Service, Notes) with migration and import compatibility",
+      "synonyms": [
+        "edit service",
+        "updateService",
+        "Services table columns update",
+        "service schema update"
+      ],
+      "description": "Updates the Service data model and Services UI table to use the columns (in order): Name, Service Type, Price, Service, Notes; adds backend support to update existing Services with authorization checks; adds a Services UI edit flow from the list; and keeps Services bulk import functional by mapping both the updated fields and the legacy 3-column import format in a backwards-compatible way (including upgrade readability via migration where needed).",
       "reqIds": [
-        "REQ-1"
+        "REQ-1",
+        "REQ-2",
+        "REQ-3",
+        "REQ-4",
+        "REQ-5"
       ],
       "version": 1
     },
     {
-      "id": "feature-remove-replace-any-node-only-environment-access-that-can-crash-in-the-browser-notably-process-env-usage-in-the-frontend-specifically-ensure-internet-identity-configuration-does-not-reference-process-env-at-runtime-in-vite-react-and-provide-a-safe-fallback-identity-provider-url-when-configuration-is-missing",
-      "title": "Remove/replace any Node-only environment access that can crash in the browser (notably `process.env` usage in the frontend). Specifically ensure Internet Identity configuration does not reference `process.env.*` at runtime in Vite/React, and provide a safe fallback identity provider URL when configuration is missing.",
+      "id": "IF-17",
+      "title": "Invoice photo attachments (UI + blob storage backend)",
+      "synonyms": [
+        "InvoicePhotosSection",
+        "InvoicePhotoPreviewDialog",
+        "blob-storage",
+        "invoice image upload"
+      ],
+      "description": "Adds invoice photo attachment capabilities in the Invoices feature (photos section + preview dialog and related types/queries) backed by a Motoko blob-storage mixin/module for storing and retrieving binary assets, integrated with the main canister and authorization/access-control.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "feature-create-invoice-branding-image-assets-from-the-uploaded-image-queen-bee-guitar-repair-3-1-png-and-add-them-as-static-frontend-assets-under-frontend-public-assets-generated",
+      "title": "Create invoice branding image assets from the uploaded image (\"Queen Bee Guitar Repair 3-1.png\") and add them as static frontend assets under frontend/public/assets/generated.",
       "reqIds": [
-        "REQ-2"
+        "REQ-6"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-user-visible-non-crashing-error-presentation-for-initialization-authentication-failures-so-users-are-not-stuck-on-an-indefinite-loading-state-reuse-existing-ui-patterns-e-g-asyncstate-to-show-an-actionable-message-and-retry-guidance-when-initialization-fails",
-      "title": "Add a user-visible, non-crashing error presentation for initialization/authentication failures so users are not stuck on an indefinite loading state. Reuse existing UI patterns (e.g., `AsyncState`) to show an actionable message and retry guidance when initialization fails.",
+      "id": "feature-show-the-new-invoice-logo-image-on-invoice-screens-at-minimum-the-invoice-detail-view-in-a-clear-consistent-position-near-the-invoice-title-identifier",
+      "title": "Show the new invoice logo image on invoice screens (at minimum the invoice detail view) in a clear, consistent position near the invoice title/identifier.",
       "reqIds": [
-        "REQ-3"
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-faint-watermark-using-the-new-watermark-asset-to-the-invoice-detail-view-s-main-invoice-content-area-line-items-totals-such-that-it-stays-behind-text-and-controls-and-does-not-reduce-readability",
+      "title": "Add a faint watermark using the new watermark asset to the invoice detail view’s main invoice content area (line items + totals) such that it stays behind text and controls and does not reduce readability.",
+      "reqIds": [
+        "REQ-8"
       ],
       "version": 1
     }
   ],
-  "new_feature_requests": [],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Use the provided picture as the app/logo asset and as a watermark on invoice views/print/export",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
   "architectural_notes": [
     "Frontend uses React + Vite with Tailwind and shadcn/ui component primitives.",
     "Authentication is handled via Internet Identity; frontend creates an authenticated canister actor for API calls.",
     "Feature structure introduced for Customers and Invoices with colocated types/queries/components.",
     "Typed canister bindings (.did JS/TS) are included for frontend-backend integration.",
     "Build/deploy templating added (Dockerfile/scripts/icp yaml) for reproducible ICP builds.",
-    "Build template expanded to include full React/Vite + Tailwind + shadcn/ui starter with ICP canister configs and workspace packaging.",
     "Custom frontend ESLint rules added to enforce stable query keys (no bigint) and required Internet Identity provider configuration.",
-    "Image asset tooling added (resize/prune scripts) for generated branding assets in the build template."
+    "Image asset tooling added (resize/prune scripts) for generated branding assets in the build template.",
+    "Motoko backend includes a dedicated migration module to manage canister state changes across upgrades (schema/data migrations coordinated with main canister code).",
+    "Backend now includes a dedicated authorization/access-control layer (mixin + module) used by the main canister to gate privileged operations.",
+    "Build template, backend authorization layer, and blob-storage module were refreshed to newer upstream component versions (e.g., core-infrastructure v1.0.2, authorization v4.0.0, blob-storage v4.0.0)."
   ],
-  "known_issues": [
-    "App has a loading error that needs to be investigated and fixed (details not provided)."
-  ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Invoice logo extracted from the uploaded bee/crown mark, transparent background, high-contrast black (queen-bee-invoice-logo.dim_512x512.png)\n- Faint watermark version of the same mark with transparency, suitable for background use (queen-bee-invoice-watermark.dim_1200x1200.png)",
   "generatedImages": [
     {
-      "filename": "frontend/public/assets/generated/queen-bee-app-icon.dim_180x180.png",
-      "description": "Generated app icon asset",
-      "targetWidth": 180,
-      "targetHeight": 180
+      "filename": "queen-bee-invoice-logo.dim_512x512.png",
+      "description": "Invoice logo extracted from the uploaded bee/crown mark, transparent background, high-contrast black",
+      "targetWidth": 512,
+      "targetHeight": 512
     },
     {
-      "filename": "frontend/public/assets/generated/queen-bee-favicon.dim_32x32.png",
-      "description": "Generated favicon asset",
-      "targetWidth": 32,
-      "targetHeight": 32
-    },
-    {
-      "filename": "frontend/public/assets/generated/queen-bee-favicon.dim_48x48.png",
-      "description": "Generated favicon asset",
-      "targetWidth": 48,
-      "targetHeight": 48
+      "filename": "queen-bee-invoice-watermark.dim_1200x1200.png",
+      "description": "Faint watermark version of the same mark with transparency, suitable for background use",
+      "targetWidth": 1200,
+      "targetHeight": 1200
     }
   ],
-  "projectName": "Fix app loading error on startup",
+  "projectName": "Enable editing of Services and update Services table headers/fields",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

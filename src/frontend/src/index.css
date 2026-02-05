@@ -91,3 +91,43 @@
     }
 }
 
+/* Invoice watermark styling */
+.invoice-watermark-container {
+    position: relative;
+}
+
+.invoice-watermark-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 400px;
+    background-image: url('/assets/generated/queen-bee-invoice-watermark.dim_1200x1200.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.dark .invoice-watermark-container::before {
+    opacity: 0.06;
+}
+
+/* Ensure content stays above watermark */
+.invoice-watermark-container > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Print-specific styles for watermark */
+@media print {
+    .invoice-watermark-container::before {
+        opacity: 0.05;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+}

@@ -1,44 +1,43 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-04T23:00:45.394Z",
-  "summary": "Diff adds a BootstrapGate and a StartupErrorBoundary to prevent blank-screen startup failures and show user-visible error states. However, the change does not demonstrate removal/replacement of `process.env` usage in the frontend; instead it adds an HTML shim that defines `window.process.env` and injects `II_URL`, which conflicts with the requirement to avoid Node-only env access in browser bundles.",
+  "generatedAt": "2026-02-05T12:59:34.758Z",
+  "summary": "Diff adds an invoice asset config and begins wiring the logo into InvoiceDetailPage, plus adds global CSS for an invoice watermark. However, the required static image assets under frontend/public/assets/generated are not shown in the diff summary, and the actual application of the watermark container within InvoiceDetailPage is not verifiable from the truncated snippet. The diff also includes unrelated global theme color changes.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Investigate and fix the runtime “loading error” that prevents the React app from rendering (startup-time crashes in auth/bootstrap layer) so the app loads to the main route without a blank screen or uncaught exception.",
-      "reason": "The diff shows additional guarding/error UI (BootstrapGate + error boundary) but does not provide evidence that the underlying startup crash/root cause was removed (e.g., the failing initialization code/path was changed). This may still leave uncaught exceptions in console depending on the original cause.",
+      "id": "REQ-6",
+      "requirement": "Create invoice branding image assets from the uploaded image and add them as static frontend assets under frontend/public/assets/generated (logo + watermark images committed).",
+      "reason": "The diff references the assets by path but does not show any new image files added under frontend/public/assets/generated; only a TS config file is added.",
       "evidence": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/BootstrapGate.tsx",
-        "frontend/src/components/StartupErrorBoundary.tsx"
+        "frontend/src/config/invoiceAssets.ts",
+        "frontend/src/index.css"
       ]
     },
     {
-      "id": "REQ-2",
-      "requirement": "Remove/replace any Node-only environment access that can crash in the browser (notably `process.env` usage in the frontend), ensuring Internet Identity configuration does not reference `process.env.*` at runtime and has a safe fallback II URL when missing.",
-      "reason": "Instead of removing runtime `process.env` usage, the diff adds a bootstrap shim that defines `window.process.env` and sets `window.process.env.II_URL`. There is no evidence that frontend code was updated to stop referencing `process.env` at runtime (hooks are immutable and no other config change is shown).",
+      "id": "REQ-8",
+      "requirement": "Add a faint watermark using the new watermark asset to the invoice detail view’s main invoice content area (line items + totals) behind text/controls, non-interactive, works in light/dark and print.",
+      "reason": "Global CSS for a watermark container is added, but the diff snippet for InvoiceDetailPage is truncated before showing whether the invoice content area is actually wrapped/applied with the required class and positioning.",
       "evidence": [
-        "frontend/index.html"
+        "frontend/src/index.css",
+        "frontend/src/features/invoices/InvoiceDetailPage.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added an index.html \"bootstrap shim\" that defines `window.process = { env: {} }` and sets `window.process.env.II_URL` to a default.",
-      "reason": "This introduces/normalizes `process.env` in the browser rather than removing Node-only env access as requested. The BuildRequest asked to eliminate `process.env` reliance, not to polyfill it.",
+      "description": "Global theme palette changes for light/dark mode (warm honey/amber variables) in index.css.",
+      "reason": "BuildRequest only asks to add invoice logo/watermark branding to existing invoice UI views; it does not request changing the app-wide theme variables.",
       "evidence": [
-        "frontend/index.html"
+        "frontend/src/index.css"
       ]
     }
   ],
-  "confidence": 0.72,
+  "confidence": 0.64,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/index.html",
-    "frontend/src/App.tsx",
-    "frontend/src/components/BootstrapGate.tsx",
-    "frontend/src/components/StartupErrorBoundary.tsx",
+    "frontend/src/config/invoiceAssets.ts",
+    "frontend/src/features/invoices/InvoiceDetailPage.tsx",
+    "frontend/src/index.css",
     "project_state.json"
   ]
 }

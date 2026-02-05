@@ -11,6 +11,20 @@ import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
 export type Address = string;
+export interface BulkImportResult {
+  'id' : [] | [bigint],
+  'service' : [] | [Service],
+  'message' : [] | [string],
+  'isSuccess' : boolean,
+  'input' : [] | [CreateServiceInput],
+}
+export interface CreateServiceInput {
+  'service' : [] | [string],
+  'serviceType' : [] | [string],
+  'name' : string,
+  'notes' : [] | [string],
+  'price' : [] | [bigint],
+}
 export interface Customer {
   'id' : CustomerId,
   'name' : Name,
@@ -19,10 +33,19 @@ export interface Customer {
   'phone' : PhoneNumber,
 }
 export type CustomerId = bigint;
+export interface CustomerInput {
+  'name' : Name,
+  'email' : Email,
+  'address' : Address,
+  'phone' : PhoneNumber,
+}
 export type Description = string;
+export type Discount = bigint;
 export type Email = string;
 export interface Invoice {
   'id' : InvoiceId,
+  'beforePhotos' : Array<Photo>,
+  'afterPhotos' : Array<Photo>,
   'isPaid' : boolean,
   'amountPaid' : bigint,
   'customerId' : CustomerId,
@@ -30,29 +53,101 @@ export interface Invoice {
   'items' : Array<InvoiceLineItem>,
 }
 export type InvoiceId = bigint;
+export interface InvoiceInput {
+  'customerId' : CustomerId,
+  'items' : Array<InvoiceLineItem>,
+}
 export interface InvoiceLineItem {
   'description' : Description,
+  'discount' : Discount,
   'quantity' : Quantity,
   'unitPrice' : Price,
 }
 export type Name = string;
 export type PhoneNumber = string;
+export interface Photo {
+  'id' : PhotoId,
+  'contentType' : string,
+  'filename' : [] | [string],
+  'blobId' : string,
+}
+export type PhotoId = string;
 export type Price = bigint;
 export type Quantity = bigint;
+export interface Service {
+  'id' : ServiceId,
+  'service' : [] | [string],
+  'serviceType' : [] | [string],
+  'name' : string,
+  'notes' : [] | [string],
+  'price' : [] | [bigint],
+}
+export type ServiceId = bigint;
+export interface UserProfile { 'name' : string }
+export type UserRole = { 'admin' : null } |
+  { 'user' : null } |
+  { 'guest' : null };
+export interface _CaffeineStorageCreateCertificateResult {
+  'method' : string,
+  'blob_hash' : string,
+}
+export interface _CaffeineStorageRefillInformation {
+  'proposed_top_up_amount' : [] | [bigint],
+}
+export interface _CaffeineStorageRefillResult {
+  'success' : [] | [boolean],
+  'topped_up_amount' : [] | [bigint],
+}
 export interface _SERVICE {
+  '_caffeineStorageBlobIsLive' : ActorMethod<[Uint8Array], boolean>,
+  '_caffeineStorageBlobsToDelete' : ActorMethod<[], Array<Uint8Array>>,
+  '_caffeineStorageConfirmBlobDeletion' : ActorMethod<
+    [Array<Uint8Array>],
+    undefined
+  >,
+  '_caffeineStorageCreateCertificate' : ActorMethod<
+    [string],
+    _CaffeineStorageCreateCertificateResult
+  >,
+  '_caffeineStorageRefillCashier' : ActorMethod<
+    [[] | [_CaffeineStorageRefillInformation]],
+    _CaffeineStorageRefillResult
+  >,
+  '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
+  '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'addCustomer' : ActorMethod<
     [string, PhoneNumber, Address, Email],
     CustomerId
+  >,
+  'addInvoicePhoto' : ActorMethod<
+    [InvoiceId, PhotoId, boolean, string, [] | [string], string],
+    undefined
+  >,
+  'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'bulkImportServices' : ActorMethod<
+    [Array<CreateServiceInput>],
+    Array<BulkImportResult>
   >,
   'createInvoice' : ActorMethod<
     [CustomerId, Array<InvoiceLineItem>],
     InvoiceId
   >,
+  'createService' : ActorMethod<[CreateServiceInput], ServiceId>,
   'getAllCustomers' : ActorMethod<[], Array<Customer>>,
   'getAllInvoices' : ActorMethod<[], Array<Invoice>>,
+  'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
+  'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCustomer' : ActorMethod<[CustomerId], [] | [Customer]>,
   'getInvoice' : ActorMethod<[InvoiceId], [] | [Invoice]>,
+  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'isCallerAdmin' : ActorMethod<[], boolean>,
+  'listServices' : ActorMethod<[], Array<Service>>,
   'recordPayment' : ActorMethod<[InvoiceId, bigint], boolean>,
+  'removeInvoicePhoto' : ActorMethod<[InvoiceId, PhotoId, boolean], undefined>,
+  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'updateCustomer' : ActorMethod<[CustomerId, CustomerInput], undefined>,
+  'updateInvoice' : ActorMethod<[InvoiceId, InvoiceInput], undefined>,
+  'updateService' : ActorMethod<[ServiceId, CreateServiceInput], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

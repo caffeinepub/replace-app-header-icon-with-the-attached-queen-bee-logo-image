@@ -5,26 +5,44 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Eye } from 'lucide-react';
+import { Plus, Eye, Pencil } from 'lucide-react';
 import AsyncState from '@/components/AsyncState';
 import InvoiceForm from './InvoiceForm';
+import SignInRequiredState from './SignInRequiredState';
 import { useInvoices, useCustomers } from './queries';
+import { useAuthStatus } from '@/hooks/useAuthStatus';
 import { formatCurrency } from './types';
+import type { Invoice } from '@/backend';
 
 export default function InvoicesPage() {
   const navigate = useNavigate();
+  const { isAuthenticated, isInitializing } = useAuthStatus();
   const { data: invoices, isLoading, isError, error, refetch } = useInvoices();
   const { data: customers } = useCustomers();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleSuccess = () => {
     setIsDialogOpen(false);
+    setIsEditDialogOpen(false);
+    setEditingInvoice(null);
   };
 
   const getCustomerName = (customerId: bigint) => {
     const customer = customers?.find((c) => c.id === customerId);
     return customer?.name || `Customer #${customerId}`;
   };
+
+  const handleEditInvoice = (invoice: Invoice) => {
+    setEditingInvoice(invoice);
+    setIsEditDialogOpen(true);
+  };
+
+  // Show sign-in required state when not authenticated
+  if (!isInitializing && !isAuthenticated) {
+    return <SignInRequiredState />;
+  }
 
   return (
     <div className="space-y-6">
@@ -98,15 +116,26 @@ export default function InvoicesPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate({ to: `/invoices/${invoice.id}` })}
-                        className="gap-2"
-                      >
-                        <Eye className="h-4 w-4" />
-                        View
-                      </Button>
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate({ to: `/invoices/${invoice.id}` })}
+                          className="gap-2"
+                        >
+                          <Eye className="h-4 w-4" />
+                          View
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditInvoice(invoice)}
+                          className="gap-2"
+                        >
+                          <Pencil className="h-4 w-4" />
+                          Edit
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -115,6 +144,24 @@ export default function InvoicesPage() {
           </CardContent>
         </Card>
       </AsyncState>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Invoice</DialogTitle>
+            <DialogDescription>
+              Update the customer and line items for this invoice
+            </DialogDescription>
+          </DialogHeader>
+          {editingInvoice && (
+            <InvoiceForm
+              onSuccess={handleSuccess}
+              initialData={editingInvoice}
+              invoiceId={editingInvoice.id}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

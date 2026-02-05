@@ -4,9 +4,12 @@ import { Toaster } from '@/components/ui/sonner';
 import AppShell from '@/components/AppShell';
 import StartupErrorBoundary from '@/components/StartupErrorBoundary';
 import BootstrapGate from '@/components/BootstrapGate';
+import LandingPage from '@/features/landing/LandingPage';
 import CustomersPage from '@/features/customers/CustomersPage';
 import InvoicesPage from '@/features/invoices/InvoicesPage';
 import InvoiceDetailPage from '@/features/invoices/InvoiceDetailPage';
+import ServicesPage from '@/features/services/ServicesPage';
+import ServiceEditPage from '@/features/services/ServiceEditPage';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -26,7 +29,7 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: InvoicesPage,
+  component: LandingPage,
 });
 
 const customersRoute = createRoute({
@@ -47,11 +50,25 @@ const invoiceDetailRoute = createRoute({
   component: InvoiceDetailPage,
 });
 
+const servicesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/services',
+  component: ServicesPage,
+});
+
+const serviceEditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/services/$serviceId',
+  component: ServiceEditPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   customersRoute,
   invoicesRoute,
   invoiceDetailRoute,
+  servicesRoute,
+  serviceEditRoute,
 ]);
 
 const router = createRouter({ routeTree });
