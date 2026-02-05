@@ -1,88 +1,38 @@
 {
   "kind": "build_request",
-  "title": "Use uploaded Queen Bee image as invoice logo and watermark",
-  "priority": "normal",
+  "title": "Retry build and resolve deployment failure",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-6",
-      "text": "Create invoice branding image assets from the uploaded image (\"Queen Bee Guitar Repair 3-1.png\") and add them as static frontend assets under frontend/public/assets/generated.",
-      "target": "frontend",
+      "id": "REQ-15",
+      "text": "Retry the application build and deployment, capture the full deployment error output, and fix the underlying issue so the canisters and frontend deploy successfully on the Internet Computer.",
+      "target": "unknown",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-1"
         ],
         "quotes": [
-          "Make this picture the logo and watermark for invoices"
+          "Try again"
         ]
       },
       "acceptanceCriteria": [
-        "Two new static assets exist in frontend/public/assets/generated and are committed: (1) an invoice logo image suitable for headers, and (2) a watermark image suitable for use as a faint background.",
-        "Assets are optimized for web use (transparent background preserved if present; otherwise background is removed/converted to transparent where possible).",
-        "Assets can be referenced via absolute paths like /assets/generated/<filename>."
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "text": "Show the new invoice logo image on invoice screens (at minimum the invoice detail view) in a clear, consistent position near the invoice title/identifier.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "recent-messages"
-        ],
-        "quotes": [
-          "Make this picture the logo and watermark for invoices"
-        ]
-      },
-      "acceptanceCriteria": [
-        "InvoiceDetailPage displays the new logo near the invoice heading (e.g., next to \"Invoice #....\") without layout breakage on mobile and desktop.",
-        "Logo includes appropriate alt text in English.",
-        "Logo renders crisply (no obvious distortion) and does not overlap other UI elements."
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "text": "Add a faint watermark using the new watermark asset to the invoice detail view’s main invoice content area (line items + totals) such that it stays behind text and controls and does not reduce readability.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "recent-messages"
-        ],
-        "quotes": [
-          "Make this picture the logo and watermark for invoices"
-        ]
-      },
-      "acceptanceCriteria": [
-        "InvoiceDetailPage shows the watermark behind the invoice content area with low opacity and non-intrusive positioning (e.g., centered or bottom-right).",
-        "Watermark is non-interactive (does not capture clicks) and does not interfere with scrolling or dialogs.",
-        "Text contrast and table readability remain acceptable in both light and dark themes.",
-        "If the user prints the page (browser print), the watermark remains faint and positioned sensibly (no tiling artifacts)."
+        "A new build + deploy attempt completes without errors.",
+        "If the deploy fails again, the full error output (including stack trace/log lines) is captured and surfaced in the deployment output for diagnosis.",
+        "After the fix, `dfx deploy` (or the platform’s equivalent deployment command) succeeds for both backend and frontend artifacts."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (Shadcn components are read-only).",
-    "Do not modify the Internet Identity hooks in frontend/src/hooks/useInternetIdentity.ts / .tsx or frontend/src/hooks/useActor.ts.",
-    "Keep the backend single-actor architecture unchanged; this change should not require backend schema changes or a migration."
+    "Use English for any user-facing text.",
+    "Backend must remain a single Motoko actor (no additional backend services).",
+    "Do not modify files under frontend/src/components/ui or other immutable frontend paths listed in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Adding PDF generation/export flows for invoices (only apply branding to the existing invoice UI views).",
-    "Changing customer/service data models or invoice calculation logic."
+    "Adding new product features unrelated to build/deploy stability.",
+    "Changing backend data models or adding migrations unless required to fix the deployment failure."
   ],
   "imageRequirements": {
-    "required": [
-      "Invoice logo extracted from the uploaded bee/crown mark, transparent background, high-contrast black (queen-bee-invoice-logo.dim_512x512.png)",
-      "Faint watermark version of the same mark with transparency, suitable for background use (queen-bee-invoice-watermark.dim_1200x1200.png)"
-    ],
+    "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

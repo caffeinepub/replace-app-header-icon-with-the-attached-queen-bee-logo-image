@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '@/hooks/useActor';
 import { queryKeys } from '@/api/queryKeys';
-import { normalizeError } from '@/api/backendClient';
+import { createAppError, isStoppedCanisterError } from '@/api/backendClient';
 import type { Service, CreateServiceInput, BulkImportResult } from '@/backend';
 import type { ServiceFormData } from './types';
 
@@ -15,12 +15,21 @@ export function useServices() {
       try {
         return await actor.listServices();
       } catch (error) {
-        // Normalize backend errors into user-friendly Error objects
-        throw new Error(normalizeError(error));
+        throw createAppError(error);
       }
     },
     enabled: !!actor && !isActorFetching,
-    retry: false,
+    retry: (failureCount, error) => {
+      // Only retry for stopped-canister errors, up to 3 times
+      if (isStoppedCanisterError(error)) {
+        return failureCount < 3;
+      }
+      return false;
+    },
+    retryDelay: (attemptIndex) => {
+      // Exponential backoff: 1s, 2s, 4s
+      return Math.min(1000 * Math.pow(2, attemptIndex), 4000);
+    },
   });
 }
 
@@ -36,7 +45,7 @@ export function useServiceDetail(serviceId: string) {
         const service = services.find((s) => s.id.toString() === serviceId);
         return service || null;
       } catch (error) {
-        throw new Error(normalizeError(error));
+        throw createAppError(error);
       }
     },
     enabled: !!actor && !isActorFetching,
@@ -61,7 +70,7 @@ export function useCreateService() {
         };
         return await actor.createService(input);
       } catch (error) {
-        throw new Error(normalizeError(error));
+        throw createAppError(error);
       }
     },
     onSuccess: () => {
@@ -87,7 +96,7 @@ export function useUpdateService() {
         };
         await actor.updateService(BigInt(serviceId), input);
       } catch (error) {
-        throw new Error(normalizeError(error));
+        throw createAppError(error);
       }
     },
     onSuccess: (_, { serviceId }) => {
@@ -107,7 +116,7 @@ export function useBulkImportServices() {
       try {
         return await actor.bulkImportServices(services);
       } catch (error) {
-        throw new Error(normalizeError(error));
+        throw createAppError(error);
       }
     },
     onSuccess: () => {

@@ -25,6 +25,15 @@ export interface CreateServiceInput {
   'notes' : [] | [string],
   'price' : [] | [bigint],
 }
+export interface CreateWorkOrderInput {
+  'status' : WorkOrderStatus,
+  'cost' : bigint,
+  'description' : string,
+  'notes' : [] | [string],
+  'customerId' : CustomerId,
+  'services' : Array<ServiceId>,
+  'images' : [] | [Array<Photo>],
+}
 export interface Customer {
   'id' : CustomerId,
   'name' : Name,
@@ -46,6 +55,7 @@ export interface Invoice {
   'id' : InvoiceId,
   'beforePhotos' : Array<Photo>,
   'afterPhotos' : Array<Photo>,
+  'createdAt' : bigint,
   'isPaid' : boolean,
   'amountPaid' : bigint,
   'customerId' : CustomerId,
@@ -83,10 +93,50 @@ export interface Service {
   'price' : [] | [bigint],
 }
 export type ServiceId = bigint;
+export interface UpdateWorkOrderInput {
+  'status' : WorkOrderStatus,
+  'cost' : bigint,
+  'description' : string,
+  'notes' : [] | [string],
+  'customerId' : CustomerId,
+  'services' : Array<ServiceId>,
+  'images' : [] | [Array<Photo>],
+}
 export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export interface WorkOrder {
+  'id' : WorkOrderId,
+  'status' : WorkOrderStatus,
+  'cost' : bigint,
+  'createdAt' : bigint,
+  'description' : string,
+  'notes' : [] | [string],
+  'customerId' : CustomerId,
+  'services' : Array<ServiceId>,
+  'images' : Array<Photo>,
+}
+export type WorkOrderId = bigint;
+export type WorkOrderStatus = { 'sent_for_approval' : null } |
+  { 'cancelled' : null } |
+  { 'pending_payment' : null } |
+  { 'in_progress' : null } |
+  { 'complete' : null } |
+  { 'approved' : null } |
+  { 'finalized' : null };
+export interface WorkOrderWithCustomerName {
+  'id' : WorkOrderId,
+  'customerName' : string,
+  'status' : WorkOrderStatus,
+  'cost' : bigint,
+  'createdAt' : bigint,
+  'description' : string,
+  'message' : [] | [string],
+  'notes' : [] | [string],
+  'services' : Array<ServiceId>,
+  'images' : Array<Photo>,
+}
 export interface _CaffeineStorageCreateCertificateResult {
   'method' : string,
   'blob_hash' : string,
@@ -123,6 +173,10 @@ export interface _SERVICE {
     [InvoiceId, PhotoId, boolean, string, [] | [string], string],
     undefined
   >,
+  'addWorkOrderPhoto' : ActorMethod<
+    [WorkOrderId, PhotoId, string, [] | [string], string],
+    undefined
+  >,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'bulkImportServices' : ActorMethod<
     [Array<CreateServiceInput>],
@@ -133,6 +187,8 @@ export interface _SERVICE {
     InvoiceId
   >,
   'createService' : ActorMethod<[CreateServiceInput], ServiceId>,
+  'createWorkOrder' : ActorMethod<[CreateWorkOrderInput], WorkOrderId>,
+  'deleteWorkOrder' : ActorMethod<[WorkOrderId], undefined>,
   'getAllCustomers' : ActorMethod<[], Array<Customer>>,
   'getAllInvoices' : ActorMethod<[], Array<Invoice>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
@@ -140,14 +196,25 @@ export interface _SERVICE {
   'getCustomer' : ActorMethod<[CustomerId], [] | [Customer]>,
   'getInvoice' : ActorMethod<[InvoiceId], [] | [Invoice]>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'getWorkOrder' : ActorMethod<[WorkOrderId], [] | [WorkOrder]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'listServices' : ActorMethod<[], Array<Service>>,
+  'listWorkOrders' : ActorMethod<[], Array<WorkOrderWithCustomerName>>,
   'recordPayment' : ActorMethod<[InvoiceId, bigint], boolean>,
   'removeInvoicePhoto' : ActorMethod<[InvoiceId, PhotoId, boolean], undefined>,
+  'removeWorkOrderPhoto' : ActorMethod<[WorkOrderId, PhotoId], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'updateCustomer' : ActorMethod<[CustomerId, CustomerInput], undefined>,
   'updateInvoice' : ActorMethod<[InvoiceId, InvoiceInput], undefined>,
   'updateService' : ActorMethod<[ServiceId, CreateServiceInput], undefined>,
+  'updateWorkOrder' : ActorMethod<
+    [WorkOrderId, UpdateWorkOrderInput],
+    undefined
+  >,
+  'updateWorkOrderPhoto' : ActorMethod<
+    [WorkOrderId, PhotoId, string, [] | [string], string],
+    undefined
+  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

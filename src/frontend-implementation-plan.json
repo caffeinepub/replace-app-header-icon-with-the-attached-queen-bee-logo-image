@@ -1,69 +1,71 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Invoice UI branding: add Queen Bee logo + watermark assets and display on invoice detail",
+  "title": "Fix frontend deployment blockers and improve failure diagnostics",
   "requirements": [
     {
-      "id": "REQ-6",
-      "summary": "Generate and commit invoice logo + watermark static assets from the uploaded Queen Bee image",
+      "id": "REQ-15",
+      "summary": "Ensure the frontend builds/deploys cleanly and surface complete error details for faster diagnosis when deploy/runtime initialization fails.",
       "acceptanceCriteria": [
-        "Two new static assets exist in frontend/public/assets/generated and are committed: (1) an invoice logo image suitable for headers, and (2) a watermark image suitable for use as a faint background.",
-        "Assets are optimized for web use (transparent background preserved if present; otherwise background is removed/converted to transparent where possible).",
-        "Assets can be referenced via absolute paths like /assets/generated/<filename>."
+        "A new build + deploy attempt completes without errors.",
+        "If the deploy fails again, the full error output (including stack trace/log lines) is captured and surfaced in the deployment output for diagnosis.",
+        "After the fix, `dfx deploy` (or the platform’s equivalent deployment command) succeeds for both backend and frontend artifacts."
       ],
       "file_operations": [
         {
+          "path": "frontend/public/assets/generated/queen-bee-app-icon.dim_180x180.png",
+          "operation": "create",
+          "description": "Add the generated app icon to the public assets directory so static asset packaging during deploy can find it (referenced by frontend/src/components/BrandHeader.tsx)."
+        },
+        {
+          "path": "frontend/public/assets/generated/queen-bee-favicon.dim_32x32.png",
+          "operation": "create",
+          "description": "Add the generated 32x32 favicon to the public assets directory so static asset packaging during deploy can find it (referenced by frontend/index.html)."
+        },
+        {
+          "path": "frontend/public/assets/generated/queen-bee-favicon.dim_48x48.png",
+          "operation": "create",
+          "description": "Add the generated 48x48 favicon to the public assets directory so static asset packaging during deploy can find it (referenced by frontend/index.html)."
+        },
+        {
+          "path": "frontend/public/assets/generated/queen-bee-guitar-repair-logo.dim_512x512.png",
+          "operation": "create",
+          "description": "Add the generated logo image to the public assets directory so static asset packaging during deploy can find it (general branding usage)."
+        },
+        {
+          "path": "frontend/public/assets/generated/queen-bee-header-banner.dim_1600x400.png",
+          "operation": "create",
+          "description": "Add the generated header banner to the public assets directory so static asset packaging during deploy can find it (branding usage where applicable)."
+        },
+        {
+          "path": "frontend/public/assets/generated/queen-bee-icons.dim_256x256.png",
+          "operation": "create",
+          "description": "Add the generated icons image to the public assets directory so static asset packaging during deploy can find it (branding usage where applicable)."
+        },
+        {
           "path": "frontend/public/assets/generated/queen-bee-invoice-logo.dim_512x512.png",
           "operation": "create",
-          "description": "Add the generated invoice logo asset extracted from the uploaded \"Queen Bee Guitar Repair 3-1.png\" with transparent background and high-contrast black styling, optimized for web use."
+          "description": "Add the generated invoice logo to the public assets directory so static asset packaging during deploy can find it (referenced by frontend/src/config/invoiceAssets.ts)."
         },
         {
           "path": "frontend/public/assets/generated/queen-bee-invoice-watermark.dim_1200x1200.png",
           "operation": "create",
-          "description": "Add the generated invoice watermark asset (faint, transparent) derived from the same mark, optimized for background use and web delivery."
-        }
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "summary": "Display the new invoice logo near the invoice heading on invoice detail view",
-      "acceptanceCriteria": [
-        "InvoiceDetailPage displays the new logo near the invoice heading (e.g., next to \"Invoice #....\") without layout breakage on mobile and desktop.",
-        "Logo includes appropriate alt text in English.",
-        "Logo renders crisply (no obvious distortion) and does not overlap other UI elements."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/config/invoiceAssets.ts",
-          "operation": "create",
-          "description": "Add a small config module exporting absolute static-asset paths and alt text for the invoice logo/watermark (e.g., referencing frontend/public/assets/generated/queen-bee-invoice-logo.dim_512x512.png)."
+          "description": "Add the generated invoice watermark to the public assets directory so static asset packaging during deploy can find it (referenced by frontend/src/config/invoiceAssets.ts and frontend/src/index.css)."
         },
         {
-          "path": "frontend/src/features/invoices/InvoiceDetailPage.tsx",
+          "path": "frontend/src/api/backendClient.ts",
           "operation": "modify",
-          "description": "Render the invoice logo image (from invoiceAssets config) next to the invoice heading in both the authenticated and sign-in-required header blocks; ensure responsive sizing, consistent alignment, and English alt text."
-        }
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "summary": "Add a faint, non-interactive watermark behind the invoice detail content area (line items + totals)",
-      "acceptanceCriteria": [
-        "InvoiceDetailPage shows the watermark behind the invoice content area with low opacity and non-intrusive positioning (e.g., centered or bottom-right).",
-        "Watermark is non-interactive (does not capture clicks) and does not interfere with scrolling or dialogs.",
-        "Text contrast and table readability remain acceptable in both light and dark themes.",
-        "If the user prints the page (browser print), the watermark remains faint and positioned sensibly (no tiling artifacts)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Add a reusable CSS class (e.g., using a ::before pseudo-element) to paint a single, no-repeat background watermark image using frontend/public/assets/generated/queen-bee-invoice-watermark.dim_1200x1200.png with pointer-events disabled, low opacity, sensible positioning, and print-specific adjustments to avoid tiling and preserve faintness in print."
+          "description": "Improve error normalization so technical details always retain the raw error text and (when available) stack trace, enabling complete copy/paste diagnostics when backend calls fail during or after deploy."
         },
         {
-          "path": "frontend/src/features/invoices/InvoiceDetailPage.tsx",
+          "path": "frontend/src/components/AsyncState.tsx",
           "operation": "modify",
-          "description": "Apply the watermark wrapper class to the invoice main content area for line items + totals (the Line Items card content region), ensuring the watermark stays behind all text/controls and does not affect interactions or layout."
+          "description": "Expand the existing technical-details UI to display and copy the full raw error text (and stack when present), not just request/canister/method fields, so failures include all diagnostic log lines for troubleshooting."
+        },
+        {
+          "path": "frontend/src/components/StartupErrorBoundary.tsx",
+          "operation": "modify",
+          "description": "Enhance startup failure rendering to show/copy full error message plus stack and ensure console logging includes full errorInfo, improving the ability to capture complete failure output when the app cannot initialize after deployment."
         }
       ]
     }

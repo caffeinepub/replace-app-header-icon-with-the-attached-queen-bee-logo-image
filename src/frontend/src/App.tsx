@@ -10,6 +10,9 @@ import InvoicesPage from '@/features/invoices/InvoicesPage';
 import InvoiceDetailPage from '@/features/invoices/InvoiceDetailPage';
 import ServicesPage from '@/features/services/ServicesPage';
 import ServiceEditPage from '@/features/services/ServiceEditPage';
+import WorkOrdersPage from '@/features/workOrders/WorkOrdersPage';
+import WorkOrderDetailPage from '@/features/workOrders/WorkOrderDetailPage';
+import InvoicesReportPage from '@/features/reports/InvoicesReportPage';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -62,6 +65,24 @@ const serviceEditRoute = createRoute({
   component: ServiceEditPage,
 });
 
+const workOrdersRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/work-orders',
+  component: WorkOrdersPage,
+});
+
+const workOrderDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/work-orders/$workOrderId',
+  component: WorkOrderDetailPage,
+});
+
+const reportsInvoicesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/reports/invoices',
+  component: InvoicesReportPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   customersRoute,
@@ -69,6 +90,9 @@ const routeTree = rootRoute.addChildren([
   invoiceDetailRoute,
   servicesRoute,
   serviceEditRoute,
+  workOrdersRoute,
+  workOrderDetailRoute,
+  reportsInvoicesRoute,
 ]);
 
 const router = createRouter({ routeTree });

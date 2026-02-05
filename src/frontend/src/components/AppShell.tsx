@@ -2,7 +2,7 @@ import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import BrandHeader from '@/components/BrandHeader';
-import { Users, FileText, Wrench } from 'lucide-react';
+import { Users, FileText, Wrench, ClipboardList, BarChart3 } from 'lucide-react';
 import { SiCaffeine } from 'react-icons/si';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -26,6 +26,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               Invoices
             </Button>
             <Button
+              variant={currentPath.startsWith('/work-orders') ? 'default' : 'ghost'}
+              onClick={() => navigate({ to: '/work-orders' })}
+              className="gap-2"
+            >
+              <ClipboardList className="h-4 w-4" />
+              Work Orders
+            </Button>
+            <Button
               variant={currentPath.startsWith('/customers') ? 'default' : 'ghost'}
               onClick={() => navigate({ to: '/customers' })}
               className="gap-2"
@@ -40,6 +48,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             >
               <Wrench className="h-4 w-4" />
               Services
+            </Button>
+            <Button
+              variant={currentPath.startsWith('/reports') ? 'default' : 'ghost'}
+              onClick={() => navigate({ to: '/reports/invoices' })}
+              className="gap-2"
+            >
+              <BarChart3 className="h-4 w-4" />
+              Reports
             </Button>
           </div>
         </div>

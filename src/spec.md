@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Use the uploaded Queen Bee mark as the invoice logo and a faint watermark on invoice UI screens.
+**Goal:** Resolve the deployment failure by re-running the build/deploy, capturing the complete error output, and applying the minimal fix needed so the app successfully deploys to the Internet Computer.
 
 **Planned changes:**
-- Create two invoice branding static assets derived from `Queen Bee Guitar Repair 3-1.png` (a header logo and a faint watermark) and add them under `frontend/public/assets/generated` for use via `/assets/generated/<filename>`.
-- Update the invoice detail view to display the new invoice logo near the invoice heading with appropriate English alt text and responsive layout.
-- Add the watermark behind the invoice content area (line items and totals) with low opacity, non-interactive behavior, acceptable readability in light/dark themes, and sensible print behavior.
+- Retry the application build and deployment process.
+- Ensure full deployment error output (including stack traces/log lines) is captured and surfaced when failures occur.
+- Fix the underlying build/deploy issue so both backend canister(s) and the frontend deploy successfully.
 
-**User-visible outcome:** Invoice detail screens show the Queen Bee logo near the invoice header and a subtle Queen Bee watermark behind the invoice content without hurting readability.
+**User-visible outcome:** The application deploys successfully (backend and frontend) on the Internet Computer via `dfx deploy` (or equivalent), without deployment errors.

@@ -1,52 +1,36 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-05T12:59:34.834Z",
+  "generatedAt": "2026-02-05T17:57:22.344Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 1,
+    "implemented": 1,
     "items": [
       {
-        "id": "REQ-6",
-        "summary": "Create invoice branding image assets from the uploaded image (\"Queen Bee Guitar Repair 3-1.png\") and add them as static frontend assets under frontend/public/assets/generated.",
+        "id": "REQ-15",
+        "summary": "Retry the application build and deployment, capture the full deployment error output, and fix the underlying issue so the canisters and frontend deploy successfully on the Internet Computer.",
         "status": "implemented",
         "plannedFiles": [
+          "frontend/public/assets/generated/queen-bee-app-icon.dim_180x180.png",
+          "frontend/public/assets/generated/queen-bee-favicon.dim_32x32.png",
+          "frontend/public/assets/generated/queen-bee-favicon.dim_48x48.png",
+          "frontend/public/assets/generated/queen-bee-guitar-repair-logo.dim_512x512.png",
+          "frontend/public/assets/generated/queen-bee-header-banner.dim_1600x400.png",
+          "frontend/public/assets/generated/queen-bee-icons.dim_256x256.png",
           "frontend/public/assets/generated/queen-bee-invoice-logo.dim_512x512.png",
-          "frontend/public/assets/generated/queen-bee-invoice-watermark.dim_1200x1200.png"
+          "frontend/public/assets/generated/queen-bee-invoice-watermark.dim_1200x1200.png",
+          "frontend/src/api/backendClient.ts",
+          "frontend/src/components/AsyncState.tsx",
+          "frontend/src/components/StartupErrorBoundary.tsx"
         ],
         "matchedFiles": [
-          "frontend/public/assets/generated/queen-bee-invoice-logo.dim_512x512.png",
-          "frontend/public/assets/generated/queen-bee-invoice-watermark.dim_1200x1200.png"
-        ]
-      },
-      {
-        "id": "REQ-7",
-        "summary": "Show the new invoice logo image on invoice screens (at minimum the invoice detail view) in a clear, consistent position near the invoice title/identifier.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/config/invoiceAssets.ts",
-          "frontend/src/features/invoices/InvoiceDetailPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/config/invoiceAssets.ts",
-          "frontend/src/features/invoices/InvoiceDetailPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-8",
-        "summary": "Add a faint watermark using the new watermark asset to the invoice detail view’s main invoice content area (line items + totals) such that it stays behind text and controls and does not reduce readability.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/index.css",
-          "frontend/src/features/invoices/InvoiceDetailPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/index.css",
-          "frontend/src/features/invoices/InvoiceDetailPage.tsx"
+          "frontend/src/api/backendClient.ts",
+          "frontend/src/components/AsyncState.tsx",
+          "frontend/src/components/StartupErrorBoundary.tsx"
         ]
       }
     ]
@@ -56,11 +40,9 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/public/assets/generated/queen-bee-invoice-logo.dim_512x512.png",
-    "frontend/public/assets/generated/queen-bee-invoice-watermark.dim_1200x1200.png",
-    "frontend/src/config/invoiceAssets.ts",
-    "frontend/src/features/invoices/InvoiceDetailPage.tsx",
-    "frontend/src/index.css",
+    "frontend/src/api/backendClient.ts",
+    "frontend/src/components/AsyncState.tsx",
+    "frontend/src/components/StartupErrorBoundary.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

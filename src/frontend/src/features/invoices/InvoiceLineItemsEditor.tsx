@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Trash2 } from 'lucide-react';
 import type { InvoiceLineItemFormData } from './types';
 import type { Service } from '@/backend';
 import { calculateLineTotal, formatCurrency } from './types';
+import ServiceSearchSelect from './ServiceSearchSelect';
 
 interface InvoiceLineItemsEditorProps {
   items: InvoiceLineItemFormData[];
@@ -80,25 +80,12 @@ export default function InvoiceLineItemsEditor({
               return (
                 <TableRow key={index}>
                   <TableCell>
-                    <Select
-                      value={item.serviceId?.toString() || 'none'}
-                      onValueChange={(value) => handleServiceSelect(index, value)}
+                    <ServiceSearchSelect
+                      value={item.serviceId}
+                      onChange={(value) => handleServiceSelect(index, value)}
+                      services={services}
                       disabled={isLoadingServices}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select service" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">
-                          <span className="text-muted-foreground">None</span>
-                        </SelectItem>
-                        {services.map((service) => (
-                          <SelectItem key={service.id.toString()} value={service.id.toString()}>
-                            {service.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    />
                   </TableCell>
                   <TableCell>
                     <Input

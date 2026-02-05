@@ -1,7 +1,37 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 80,
-  "summary": "ICP canister-based web app scaffolded with Motoko backend and React/Vite frontend, including Internet Identity authentication, core UI shell/branding, Customers/Invoices/Services CRUD-style pages with backend access-control/authorization support, updated Services data model/table columns and edit flow with backwards-compatible bulk import mapping, plus invoice photo attachment support backed by a Motoko blob-storage module.",
+  "projectStateVersion": 106,
+  "summary": "ICP canister-based web app scaffolded with Motoko backend and React/Vite frontend, including Internet Identity authentication, core UI shell/branding, Customers/Invoices/Services CRUD-style pages with backend access-control/authorization support, updated Services data model/table columns and edit flow with backwards-compatible bulk import mapping, invoice photo attachment support backed by a Motoko blob-storage module, a Work Orders feature (pages/forms/queries) including photo attachment UI, and an Invoices Reports page for viewing invoice reporting data.",
+  "architectural_notes": [
+    "Frontend uses React + Vite with Tailwind and shadcn/ui component primitives.",
+    "Authentication is handled via Internet Identity; frontend creates an authenticated canister actor for API calls.",
+    "Feature structure introduced for Customers and Invoices with colocated types/queries/components.",
+    "Typed canister bindings (.did JS/TS) are included for frontend-backend integration.",
+    "Build/deploy templating added (Dockerfile/scripts/icp yaml) for reproducible ICP builds.",
+    "Custom frontend ESLint rules added to enforce stable query keys (no bigint) and required Internet Identity provider configuration.",
+    "Motoko backend includes a dedicated migration module to manage canister state changes across upgrades (schema/data migrations coordinated with main canister code).",
+    "Backend now includes a dedicated authorization/access-control layer (mixin + module) used by the main canister to gate privileged operations.",
+    "Build template, backend authorization layer, and blob-storage module were refreshed to newer upstream component versions (e.g., core-infrastructure v1.0.2, authorization v4.0.0, blob-storage v4.0.0).",
+    "Work Orders feature added using the same feature module pattern (types/queries/components) as Customers/Invoices/Services, including a photo section UI and auth-gated states."
+  ],
+  "known_issues": [
+    "Invoice watermark is not rendering/visible in the invoice UI (user reports 'There was no watermark')."
+  ],
+  "isFixRequest": true,
+  "generatedImages": [
+    {
+      "filename": "frontend/public/assets/generated/queen-bee-invoice-logo.dim_512x512.png",
+      "description": "Generated invoice logo asset",
+      "targetWidth": 512,
+      "targetHeight": 512
+    },
+    {
+      "filename": "frontend/public/assets/generated/queen-bee-invoice-watermark.dim_1200x1200.png",
+      "description": "Generated invoice watermark asset",
+      "targetWidth": 1200,
+      "targetHeight": 1200
+    }
+  ],
   "existing_features": [
     {
       "id": "IF-1",
@@ -204,26 +234,86 @@
       "version": 1
     },
     {
-      "id": "feature-create-invoice-branding-image-assets-from-the-uploaded-image-queen-bee-guitar-repair-3-1-png-and-add-them-as-static-frontend-assets-under-frontend-public-assets-generated",
-      "title": "Create invoice branding image assets from the uploaded image (\"Queen Bee Guitar Repair 3-1.png\") and add them as static frontend assets under frontend/public/assets/generated.",
-      "reqIds": [
-        "REQ-6"
+      "id": "IF-18",
+      "title": "Work Orders feature pages, forms, and queries (with photos UI section)",
+      "synonyms": [
+        "WorkOrdersPage",
+        "WorkOrderDetailPage",
+        "WorkOrderSheetForm",
+        "WorkOrderCreateDialog",
+        "WorkOrderPhotosSection"
       ],
+      "description": "Adds a new Work Orders frontend feature area including list and detail pages, create/edit sheet-style form and create dialog, feature-local types and queries, auth-gated sign-in required state, and a photos section UI patterned after existing invoice photo attachments.",
+      "reqIds": [],
       "version": 1
     },
     {
-      "id": "feature-show-the-new-invoice-logo-image-on-invoice-screens-at-minimum-the-invoice-detail-view-in-a-clear-consistent-position-near-the-invoice-title-identifier",
-      "title": "Show the new invoice logo image on invoice screens (at minimum the invoice detail view) in a clear, consistent position near the invoice title/identifier.",
+      "id": "IF-19",
+      "title": "Landing page route",
+      "synonyms": [
+        "LandingPage"
+      ],
+      "description": "Adds a basic Landing page/route to the frontend application routing structure.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-20",
+      "title": "Invoices report page",
+      "synonyms": [
+        "Reports",
+        "InvoicesReportPage",
+        "invoice reporting"
+      ],
+      "description": "Adds a Reports area with an Invoices report page for viewing invoice reporting information in the frontend feature structure.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "feature-add-filter-controls-to-the-invoices-report-page-to-filter-the-displayed-rows-by-payment-status-all-paid-unpaid-customer-and-created-at-date-range",
+      "title": "Add filter controls to the Invoices Report page to filter the displayed rows by: payment status (All/Paid/Unpaid), customer, and created-at date range.",
       "reqIds": [
         "REQ-7"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-faint-watermark-using-the-new-watermark-asset-to-the-invoice-detail-view-s-main-invoice-content-area-line-items-totals-such-that-it-stays-behind-text-and-controls-and-does-not-reduce-readability",
-      "title": "Add a faint watermark using the new watermark asset to the invoice detail view’s main invoice content area (line items + totals) such that it stays behind text and controls and does not reduce readability.",
+      "id": "feature-update-the-invoices-report-summary-calculations-so-totals-count-and-total-amount-always-reflect-the-currently-filtered-invoice-rows-and-add-a-single-action-to-clear-reset-all-filters-to-defaults",
+      "title": "Update the Invoices Report summary calculations so totals (count and total amount) always reflect the currently filtered invoice rows, and add a single action to clear/reset all filters to defaults.",
       "reqIds": [
         "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-invoice-watermark-is-visibly-rendered-anywhere-the-invoice-watermark-styling-is-intended-to-appear-using-the-existing-watermark-asset-and-configuration-paths",
+      "title": "Ensure the invoice watermark is visibly rendered anywhere the invoice watermark styling is intended to appear, using the existing watermark asset and configuration paths.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-invoice-watermark-css-styling-so-the-watermark-appearance-is-reliably-noticeable-across-light-and-dark-themes-and-in-print-styles-within-reasonable-browser-limitations-while-keeping-content-legible",
+      "title": "Update the invoice watermark CSS/styling so the watermark appearance is reliably noticeable across light and dark themes and in print styles (within reasonable browser limitations), while keeping content legible.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-the-invoice-watermark-container-wrapper-consistently-in-the-invoice-ui-so-the-watermark-appears-where-users-expect-it-on-the-invoice-view-not-only-in-a-single-subsection-without-changing-backend-data-models",
+      "title": "Apply the `.invoice-watermark-container` wrapper consistently in the invoice UI so the watermark appears where users expect it on the invoice view (not only in a single subsection), without changing backend data models.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-retry-the-application-build-and-deployment-capture-the-full-deployment-error-output-and-fix-the-underlying-issue-so-the-canisters-and-frontend-deploy-successfully-on-the-internet-computer",
+      "title": "Retry the application build and deployment, capture the full deployment error output, and fix the underlying issue so the canisters and frontend deploy successfully on the Internet Computer.",
+      "reqIds": [
+        "REQ-15"
       ],
       "version": 1
     }
@@ -231,38 +321,47 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Use the provided picture as the app/logo asset and as a watermark on invoice views/print/export",
+      "summary": "Add filter controls to the invoice-paid/invoices report (e.g., date range, customer, status)",
       "reqIds": [],
       "status": "pending"
-    }
-  ],
-  "architectural_notes": [
-    "Frontend uses React + Vite with Tailwind and shadcn/ui component primitives.",
-    "Authentication is handled via Internet Identity; frontend creates an authenticated canister actor for API calls.",
-    "Feature structure introduced for Customers and Invoices with colocated types/queries/components.",
-    "Typed canister bindings (.did JS/TS) are included for frontend-backend integration.",
-    "Build/deploy templating added (Dockerfile/scripts/icp yaml) for reproducible ICP builds.",
-    "Custom frontend ESLint rules added to enforce stable query keys (no bigint) and required Internet Identity provider configuration.",
-    "Image asset tooling added (resize/prune scripts) for generated branding assets in the build template.",
-    "Motoko backend includes a dedicated migration module to manage canister state changes across upgrades (schema/data migrations coordinated with main canister code).",
-    "Backend now includes a dedicated authorization/access-control layer (mixin + module) used by the main canister to gate privileged operations.",
-    "Build template, backend authorization layer, and blob-storage module were refreshed to newer upstream component versions (e.g., core-infrastructure v1.0.2, authorization v4.0.0, blob-storage v4.0.0)."
-  ],
-  "known_issues": [],
-  "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Invoice logo extracted from the uploaded bee/crown mark, transparent background, high-contrast black (queen-bee-invoice-logo.dim_512x512.png)\n- Faint watermark version of the same mark with transparency, suitable for background use (queen-bee-invoice-watermark.dim_1200x1200.png)",
-  "generatedImages": [
-    {
-      "filename": "queen-bee-invoice-logo.dim_512x512.png",
-      "description": "Invoice logo extracted from the uploaded bee/crown mark, transparent background, high-contrast black",
-      "targetWidth": 512,
-      "targetHeight": 512
     },
     {
-      "filename": "queen-bee-invoice-watermark.dim_1200x1200.png",
-      "description": "Faint watermark version of the same mark with transparency, suitable for background use",
-      "targetWidth": 1200,
-      "targetHeight": 1200
+      "id": "AR-2",
+      "summary": "Extend the backend Invoice data model to store a creation timestamp and preserve it across all invoice updates so the report can support date-based filtering.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Use the provided image as the invoice logo and invoice watermark in the app (invoice views/print/export as applicable)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Replace the invoice logo asset with a processed version of the uploaded image and ensure all invoice UI that uses the invoice logo renders the new asset (including Invoice detail page header).",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Replace the invoice watermark asset with a processed version of the uploaded image and ensure the invoice watermark background uses the new watermark asset via the existing watermark styling (e.g., `.invoice-watermark-container`).",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Update invoice branding configuration and styles to reference the updated invoice logo and watermark assets (including `frontend/src/config/invoiceAssets.ts` and any CSS `background-image` references) so the app consistently uses the new files.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "status": "pending"
     }
   ],
   "projectName": "Enable editing of Services and update Services table headers/fields",

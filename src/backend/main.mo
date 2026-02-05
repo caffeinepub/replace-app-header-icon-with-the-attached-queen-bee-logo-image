@@ -4,6 +4,11 @@ import Principal "mo:core/Principal";
 import MixinStorage "blob-storage/Mixin";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
+import Iter "mo:core/Iter";
+import CurTime "mo:core/Time";
+import Nat "mo:core/Nat";
+
+
 
 actor {
   include MixinStorage();
@@ -23,6 +28,7 @@ actor {
   type InvoiceId = Nat;
   type ServiceId = Nat;
   type PhotoId = Text;
+  type WorkOrderId = Nat;
 
   type Customer = {
     id : CustomerId;
@@ -37,6 +43,16 @@ actor {
     phone : PhoneNumber;
     address : Address;
     email : Email;
+  };
+
+  public type WorkOrderStatus = {
+    #pending_payment;
+    #finalized;
+    #sent_for_approval;
+    #in_progress;
+    #cancelled;
+    #approved;
+    #complete;
   };
 
   type InvoiceLineItem = {
@@ -80,6 +96,44 @@ actor {
     isPaid : Bool;
     beforePhotos : [Photo];
     afterPhotos : [Photo];
+    createdAt : Nat; // Timestamp of invoice creation
+  };
+
+  type WorkOrder = {
+    id : WorkOrderId;
+    description : Text;
+    customerId : CustomerId;
+    services : [ServiceId];
+    createdAt : Int;
+    status : WorkOrderStatus;
+    notes : ?Text;
+    cost : Nat;
+    images : [Photo];
+  };
+
+  type CreateWorkOrderInput = {
+    description : Text;
+    customerId : CustomerId;
+    services : [ServiceId];
+    status : WorkOrderStatus;
+    notes : ?Text;
+    cost : Nat;
+    images : ?[Photo];
+  };
+
+  type UpdateWorkOrderInput = CreateWorkOrderInput;
+
+  public type WorkOrderWithCustomerName = {
+    id : WorkOrderId;
+    description : Text;
+    customerName : Text;
+    message : ?Text;
+    cost : Nat;
+    createdAt : Int;
+    status : WorkOrderStatus;
+    notes : ?Text;
+    images : [Photo];
+    services : [ServiceId];
   };
 
   public type BulkImportResult = {
@@ -101,10 +155,12 @@ actor {
   var nextCustomerId = 1;
   var nextInvoiceId = 1;
   var nextServiceId = 1;
+  var nextWorkOrderId = 1;
 
   let customerStore = Map.empty<CustomerId, Customer>();
   let invoiceStore = Map.empty<InvoiceId, Invoice>();
   let serviceStore = Map.empty<ServiceId, Service>();
+  let workOrderStore = Map.empty<WorkOrderId, WorkOrder>();
   let userProfiles = Map.empty<Principal, UserProfile>();
 
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
@@ -135,8 +191,12 @@ actor {
       let discountValue = if (item.discount > 100) { 100 } else { item.discount };
       let discountedTotal = if (lineTotal == 0) { 0 } else {
         if (discountValue >= 100) { 0 } else {
-          let discountAmount = lineTotal * discountValue / 100;
-          if (lineTotal > discountAmount) { lineTotal - discountAmount } else { 0 };
+          let discountAmount = switch (lineTotal * discountValue / 100) {
+            case (value) { Nat.min(lineTotal, value) };
+          };
+          switch (lineTotal - discountAmount) {
+            case (value) { value };
+          };
         };
       };
       total += discountedTotal;
@@ -279,7 +339,6 @@ actor {
     customerId;
   };
 
-  // New backend method for updating a customer
   public shared ({ caller }) func updateCustomer(id : CustomerId, input : CustomerInput) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can update customers");
@@ -335,13 +394,13 @@ actor {
       isPaid = false;
       beforePhotos = [];
       afterPhotos = [];
+      createdAt = if (CurTime.now() > 0) { CurTime.now().toNat() } else { 0 };
     };
 
     invoiceStore.add(invoiceId, invoice);
     invoiceId;
   };
 
-  // New backend method for updating an invoice
   public shared ({ caller }) func updateInvoice(id : InvoiceId, input : InvoiceInput) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can update invoices");
@@ -362,6 +421,7 @@ actor {
           isPaid = existingInvoice.amountPaid >= totalAmount;
           beforePhotos = existingInvoice.beforePhotos;
           afterPhotos = existingInvoice.afterPhotos;
+          createdAt = existingInvoice.createdAt;
         };
         invoiceStore.add(id, updatedInvoice);
       };
@@ -389,6 +449,7 @@ actor {
           isPaid = newAmountDue == 0;
           beforePhotos = invoice.beforePhotos;
           afterPhotos = invoice.afterPhotos;
+          createdAt = invoice.createdAt;
         };
 
         invoiceStore.add(invoiceId, updatedInvoice);
@@ -458,6 +519,192 @@ actor {
     } else {
       let filtered = invoice.afterPhotos.filter(func(photo) { photo.id != photoId });
       { invoice with afterPhotos = filtered };
+    };
+  };
+
+  // Work Order APIs
+  public shared ({ caller }) func createWorkOrder(input : CreateWorkOrderInput) : async WorkOrderId {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can create work orders");
+    };
+
+    // Verify the customer exists
+    switch (customerStore.get(input.customerId)) {
+      case (null) { Runtime.trap("Customer not found") };
+      case (_customer) {
+        let workOrderId = nextWorkOrderId;
+        nextWorkOrderId += 1;
+
+        let images = switch (input.images) {
+          case (null) { [] };
+          case (?imgs) { imgs };
+        };
+
+        let finalCost = if (input.cost == 0 and input.services.size() > 0) {
+          calculateTotalAmountItems(input.services.map(func(s) { { description = "Line"; quantity = 1; unitPrice = 1; discount = 0 } }));
+        } else {
+          input.cost;
+        };
+
+        let workOrder : WorkOrder = {
+          id = workOrderId;
+          description = input.description;
+          customerId = input.customerId;
+          services = input.services;
+          createdAt = CurTime.now();
+          status = input.status;
+          notes = input.notes;
+          cost = finalCost;
+          images;
+        };
+
+        workOrderStore.add(workOrderId, workOrder);
+        workOrderId;
+      };
+    };
+  };
+
+  public shared ({ caller }) func updateWorkOrder(workOrderId : WorkOrderId, input : UpdateWorkOrderInput) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can update work orders");
+    };
+
+    // If customer is changed, verify new customer exists
+    switch (customerStore.get(input.customerId)) {
+      case (null) { Runtime.trap("Customer not found") };
+      case (_customer) {
+        switch (workOrderStore.get(workOrderId)) {
+          case (null) { Runtime.trap("Work order not found") };
+          case (?_existingWorkOrder) {
+            let images = switch (input.images) {
+              case (null) { [] };
+              case (?imgs) { imgs };
+            };
+
+            let finalCost = if (input.cost == 0 and input.services.size() > 0) {
+              calculateTotalAmountItems(input.services.map(func(s) { { description = "Line"; quantity = 1; unitPrice = 1; discount = 0 } }));
+            } else {
+              input.cost;
+            };
+
+            let updatedWorkOrder : WorkOrder = {
+              id = workOrderId;
+              description = input.description;
+              customerId = input.customerId;
+              services = input.services;
+              createdAt = CurTime.now();
+              status = input.status;
+              notes = input.notes;
+              cost = finalCost;
+              images;
+            };
+
+            workOrderStore.add(workOrderId, updatedWorkOrder);
+          };
+        };
+      };
+    };
+  };
+
+  public shared ({ caller }) func addWorkOrderPhoto(workOrderId : WorkOrderId, photoId : PhotoId, blobId : Text, filename : ?Text, contentType : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can add photos");
+    };
+
+    switch (workOrderStore.get(workOrderId)) {
+      case (null) { Runtime.trap("Work order not found") };
+      case (?workOrder) {
+        let photo : Photo = {
+          id = photoId;
+          blobId;
+          filename;
+          contentType;
+        };
+        let updatedImages = workOrder.images.concat([photo]);
+        let updatedWorkOrder = { workOrder with images = updatedImages };
+        workOrderStore.add(workOrderId, updatedWorkOrder);
+      };
+    };
+  };
+
+  public shared ({ caller }) func updateWorkOrderPhoto(workOrderId : WorkOrderId, photoId : PhotoId, blobId : Text, filename : ?Text, contentType : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can update photos");
+    };
+
+    switch (workOrderStore.get(workOrderId)) {
+      case (null) { Runtime.trap("Work order not found") };
+      case (?workOrder) {
+        let photo : Photo = {
+          id = photoId;
+          blobId;
+          filename;
+          contentType;
+        };
+        let updatedImages = workOrder.images.map(func(p) { if (p.id == photoId) { photo } else { p } });
+        let updatedWorkOrder = { workOrder with images = updatedImages };
+        workOrderStore.add(workOrderId, updatedWorkOrder);
+      };
+    };
+  };
+
+  public shared ({ caller }) func removeWorkOrderPhoto(workOrderId : WorkOrderId, photoId : PhotoId) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can remove photos");
+    };
+
+    switch (workOrderStore.get(workOrderId)) {
+      case (null) { Runtime.trap("Work order not found") };
+      case (?workOrder) {
+        let updatedImages = workOrder.images.filter(func(photo) { photo.id != photoId });
+        let updatedWorkOrder = { workOrder with images = updatedImages };
+        workOrderStore.add(workOrderId, updatedWorkOrder);
+      };
+    };
+  };
+
+  public query ({ caller }) func getWorkOrder(workOrderId : WorkOrderId) : async ?WorkOrder {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can get work orders");
+    };
+    workOrderStore.get(workOrderId);
+  };
+
+  public shared ({ caller }) func deleteWorkOrder(workOrderId : WorkOrderId) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can delete work orders");
+    };
+    workOrderStore.remove(workOrderId);
+  };
+
+  public query ({ caller }) func listWorkOrders() : async [WorkOrderWithCustomerName] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can list work orders");
+    };
+
+    let workOrders = workOrderStore.values().toArray();
+
+    workOrders.map(func(workOrder) {
+      let customerName = getCustomerName(workOrder.customerId);
+      {
+        id = workOrder.id;
+        description = workOrder.description;
+        customerName = customerName;
+        message = ?customerName;
+        cost = workOrder.cost;
+        createdAt = workOrder.createdAt;
+        status = workOrder.status;
+        notes = workOrder.notes;
+        images = workOrder.images;
+        services = workOrder.services;
+      };
+    });
+  };
+
+  private func getCustomerName(customerId : CustomerId) : Text {
+    switch (customerStore.get(customerId)) {
+      case (null) { "Unknown Customer" };
+      case (?customer) { customer.name };
     };
   };
 };

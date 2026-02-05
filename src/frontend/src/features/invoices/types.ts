@@ -91,3 +91,14 @@ function formatCurrencyForInput(cents: bigint): string {
   const dollars = Number(cents) / 100;
   return dollars.toFixed(2);
 }
+
+// Helper function to format invoice number with zero-padding
+export function formatInvoiceNumber(id: bigint | number): string {
+  const num = typeof id === 'bigint' ? Number(id) : id;
+  return `INV-${num.toString().padStart(4, '0')}`;
+}
+
+// Helper function to calculate total invoice amount (amountPaid + amountDue)
+export function calculateInvoiceAmount(invoice: Invoice): bigint {
+  return invoice.amountPaid + invoice.amountDue;
+}

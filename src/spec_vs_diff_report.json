@@ -1,43 +1,49 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-05T12:59:34.758Z",
-  "summary": "Diff adds an invoice asset config and begins wiring the logo into InvoiceDetailPage, plus adds global CSS for an invoice watermark. However, the required static image assets under frontend/public/assets/generated are not shown in the diff summary, and the actual application of the watermark container within InvoiceDetailPage is not verifiable from the truncated snippet. The diff also includes unrelated global theme color changes.",
+  "generatedAt": "2026-02-05T17:57:22.341Z",
+  "summary": "Diff focuses on frontend runtime error normalization and UI surfacing of technical details (stack/raw error, request/canister/method) via AsyncState and a StartupErrorBoundary. There is no evidence of changes to build/deploy tooling or of a new build/deploy attempt with captured deployment logs, so REQ-15’s deploy-success and deploy-log capture aspects are not implemented in the shown diff.",
   "missing_requirements": [
     {
-      "id": "REQ-6",
-      "requirement": "Create invoice branding image assets from the uploaded image and add them as static frontend assets under frontend/public/assets/generated (logo + watermark images committed).",
-      "reason": "The diff references the assets by path but does not show any new image files added under frontend/public/assets/generated; only a TS config file is added.",
+      "id": "REQ-15",
+      "requirement": "Retry the application build and deployment, capture the full deployment error output, and fix the underlying issue so the canisters and frontend deploy successfully on the Internet Computer.",
+      "reason": "The diff shows only frontend TypeScript/React changes for runtime error handling and UI display. There are no changes to deployment configuration/scripts, no backend/canister build adjustments, and no evidence of capturing and surfacing full *deployment* command output/stack traces for diagnosis, nor evidence that `dfx deploy` now succeeds.",
       "evidence": [
-        "frontend/src/config/invoiceAssets.ts",
-        "frontend/src/index.css"
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "requirement": "Add a faint watermark using the new watermark asset to the invoice detail view’s main invoice content area (line items + totals) behind text/controls, non-interactive, works in light/dark and print.",
-      "reason": "Global CSS for a watermark container is added, but the diff snippet for InvoiceDetailPage is truncated before showing whether the invoice content area is actually wrapped/applied with the required class and positioning.",
-      "evidence": [
-        "frontend/src/index.css",
-        "frontend/src/features/invoices/InvoiceDetailPage.tsx"
+        "frontend/src/api/backendClient.ts",
+        "frontend/src/components/AsyncState.tsx",
+        "frontend/src/components/StartupErrorBoundary.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Global theme palette changes for light/dark mode (warm honey/amber variables) in index.css.",
-      "reason": "BuildRequest only asks to add invoice logo/watermark branding to existing invoice UI views; it does not request changing the app-wide theme variables.",
+      "description": "Frontend runtime error classification (stopped canister / authorization) and user-friendly messaging with parsed technical details (requestId/canisterId/method/rawError/stack).",
+      "reason": "REQ-15 is about build/deploy failure resolution and capturing *deployment* error output; these runtime UX/error-normalization enhancements are not explicitly requested and may be considered new functionality beyond deploy stability work.",
       "evidence": [
-        "frontend/src/index.css"
+        "frontend/src/api/backendClient.ts"
+      ]
+    },
+    {
+      "description": "UI for displaying and copying technical error details in AsyncState error cards (collapsible ‘Technical details’, copy-to-clipboard).",
+      "reason": "Not explicitly required by REQ-15; it surfaces runtime error diagnostics to users rather than capturing deployment command output.",
+      "evidence": [
+        "frontend/src/components/AsyncState.tsx"
+      ]
+    },
+    {
+      "description": "New/expanded StartupErrorBoundary UI with technical details and copy-to-clipboard for startup errors.",
+      "reason": "Not explicitly requested by REQ-15; focuses on frontend runtime startup errors instead of build/deploy pipeline failures.",
+      "evidence": [
+        "frontend/src/components/StartupErrorBoundary.tsx"
       ]
     }
   ],
-  "confidence": 0.64,
+  "confidence": 0.74,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/config/invoiceAssets.ts",
-    "frontend/src/features/invoices/InvoiceDetailPage.tsx",
-    "frontend/src/index.css",
+    "frontend/src/api/backendClient.ts",
+    "frontend/src/components/AsyncState.tsx",
+    "frontend/src/components/StartupErrorBoundary.tsx",
     "project_state.json"
   ]
 }

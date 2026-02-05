@@ -2,29 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-create-invoice-branding-image-assets-from-the-uploaded-image-queen-bee-guitar-repair-3-1-png-and-add-them-as-static-frontend-assets-under-frontend-public-assets-generated",
-      "featureTitle": "Create invoice branding image assets from the uploaded image (\"Queen Bee Guitar Repair 3-1.png\") and add them as static frontend assets under frontend/public/assets/generated.",
-      "files": [],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-6"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-show-the-new-invoice-logo-image-on-invoice-screens-at-minimum-the-invoice-detail-view-in-a-clear-consistent-position-near-the-invoice-title-identifier",
-      "featureTitle": "Show the new invoice logo image on invoice screens (at minimum the invoice detail view) in a clear, consistent position near the invoice title/identifier.",
+      "featureId": "feature-retry-the-application-build-and-deployment-capture-the-full-deployment-error-output-and-fix-the-underlying-issue-so-the-canisters-and-frontend-deploy-successfully-on-the-internet-computer",
+      "featureTitle": "Retry the application build and deployment, capture the full deployment error output, and fix the underlying issue so the canisters and frontend deploy successfully on the Internet Computer.",
       "files": [
-        "frontend/src/config/invoiceAssets.ts",
-        "frontend/src/features/invoices/InvoiceDetailPage.tsx"
+        "frontend/src/api/backendClient.ts",
+        "frontend/src/components/AsyncState.tsx",
+        "frontend/src/components/StartupErrorBoundary.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -36,28 +19,7 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-7"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-a-faint-watermark-using-the-new-watermark-asset-to-the-invoice-detail-view-s-main-invoice-content-area-line-items-totals-such-that-it-stays-behind-text-and-controls-and-does-not-reduce-readability",
-      "featureTitle": "Add a faint watermark using the new watermark asset to the invoice detail view’s main invoice content area (line items + totals) such that it stays behind text and controls and does not reduce readability.",
-      "files": [
-        "frontend/src/features/invoices/InvoiceDetailPage.tsx",
-        "frontend/src/index.css"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-8"
+        "REQ-15"
       ],
       "confidence": "high"
     }

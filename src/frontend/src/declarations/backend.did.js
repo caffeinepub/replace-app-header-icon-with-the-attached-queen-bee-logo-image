@@ -25,6 +25,7 @@ export const Email = IDL.Text;
 export const CustomerId = IDL.Nat;
 export const InvoiceId = IDL.Nat;
 export const PhotoId = IDL.Text;
+export const WorkOrderId = IDL.Nat;
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
@@ -63,6 +64,30 @@ export const InvoiceLineItem = IDL.Record({
   'quantity' : Quantity,
   'unitPrice' : Price,
 });
+export const WorkOrderStatus = IDL.Variant({
+  'sent_for_approval' : IDL.Null,
+  'cancelled' : IDL.Null,
+  'pending_payment' : IDL.Null,
+  'in_progress' : IDL.Null,
+  'complete' : IDL.Null,
+  'approved' : IDL.Null,
+  'finalized' : IDL.Null,
+});
+export const Photo = IDL.Record({
+  'id' : PhotoId,
+  'contentType' : IDL.Text,
+  'filename' : IDL.Opt(IDL.Text),
+  'blobId' : IDL.Text,
+});
+export const CreateWorkOrderInput = IDL.Record({
+  'status' : WorkOrderStatus,
+  'cost' : IDL.Nat,
+  'description' : IDL.Text,
+  'notes' : IDL.Opt(IDL.Text),
+  'customerId' : CustomerId,
+  'services' : IDL.Vec(ServiceId),
+  'images' : IDL.Opt(IDL.Vec(Photo)),
+});
 export const Name = IDL.Text;
 export const Customer = IDL.Record({
   'id' : CustomerId,
@@ -71,16 +96,11 @@ export const Customer = IDL.Record({
   'address' : Address,
   'phone' : PhoneNumber,
 });
-export const Photo = IDL.Record({
-  'id' : PhotoId,
-  'contentType' : IDL.Text,
-  'filename' : IDL.Opt(IDL.Text),
-  'blobId' : IDL.Text,
-});
 export const Invoice = IDL.Record({
   'id' : InvoiceId,
   'beforePhotos' : IDL.Vec(Photo),
   'afterPhotos' : IDL.Vec(Photo),
+  'createdAt' : IDL.Nat,
   'isPaid' : IDL.Bool,
   'amountPaid' : IDL.Nat,
   'customerId' : CustomerId,
@@ -88,6 +108,29 @@ export const Invoice = IDL.Record({
   'items' : IDL.Vec(InvoiceLineItem),
 });
 export const UserProfile = IDL.Record({ 'name' : IDL.Text });
+export const WorkOrder = IDL.Record({
+  'id' : WorkOrderId,
+  'status' : WorkOrderStatus,
+  'cost' : IDL.Nat,
+  'createdAt' : IDL.Int,
+  'description' : IDL.Text,
+  'notes' : IDL.Opt(IDL.Text),
+  'customerId' : CustomerId,
+  'services' : IDL.Vec(ServiceId),
+  'images' : IDL.Vec(Photo),
+});
+export const WorkOrderWithCustomerName = IDL.Record({
+  'id' : WorkOrderId,
+  'customerName' : IDL.Text,
+  'status' : WorkOrderStatus,
+  'cost' : IDL.Nat,
+  'createdAt' : IDL.Int,
+  'description' : IDL.Text,
+  'message' : IDL.Opt(IDL.Text),
+  'notes' : IDL.Opt(IDL.Text),
+  'services' : IDL.Vec(ServiceId),
+  'images' : IDL.Vec(Photo),
+});
 export const CustomerInput = IDL.Record({
   'name' : Name,
   'email' : Email,
@@ -97,6 +140,15 @@ export const CustomerInput = IDL.Record({
 export const InvoiceInput = IDL.Record({
   'customerId' : CustomerId,
   'items' : IDL.Vec(InvoiceLineItem),
+});
+export const UpdateWorkOrderInput = IDL.Record({
+  'status' : WorkOrderStatus,
+  'cost' : IDL.Nat,
+  'description' : IDL.Text,
+  'notes' : IDL.Opt(IDL.Text),
+  'customerId' : CustomerId,
+  'services' : IDL.Vec(ServiceId),
+  'images' : IDL.Opt(IDL.Vec(Photo)),
 });
 
 export const idlService = IDL.Service({
@@ -137,6 +189,11 @@ export const idlService = IDL.Service({
       [],
       [],
     ),
+  'addWorkOrderPhoto' : IDL.Func(
+      [WorkOrderId, PhotoId, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
+      [],
+      [],
+    ),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'bulkImportServices' : IDL.Func(
       [IDL.Vec(CreateServiceInput)],
@@ -149,6 +206,8 @@ export const idlService = IDL.Service({
       [],
     ),
   'createService' : IDL.Func([CreateServiceInput], [ServiceId], []),
+  'createWorkOrder' : IDL.Func([CreateWorkOrderInput], [WorkOrderId], []),
+  'deleteWorkOrder' : IDL.Func([WorkOrderId], [], []),
   'getAllCustomers' : IDL.Func([], [IDL.Vec(Customer)], ['query']),
   'getAllInvoices' : IDL.Func([], [IDL.Vec(Invoice)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
@@ -160,14 +219,27 @@ export const idlService = IDL.Service({
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
+  'getWorkOrder' : IDL.Func([WorkOrderId], [IDL.Opt(WorkOrder)], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'listServices' : IDL.Func([], [IDL.Vec(Service)], ['query']),
+  'listWorkOrders' : IDL.Func(
+      [],
+      [IDL.Vec(WorkOrderWithCustomerName)],
+      ['query'],
+    ),
   'recordPayment' : IDL.Func([InvoiceId, IDL.Nat], [IDL.Bool], []),
   'removeInvoicePhoto' : IDL.Func([InvoiceId, PhotoId, IDL.Bool], [], []),
+  'removeWorkOrderPhoto' : IDL.Func([WorkOrderId, PhotoId], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'updateCustomer' : IDL.Func([CustomerId, CustomerInput], [], []),
   'updateInvoice' : IDL.Func([InvoiceId, InvoiceInput], [], []),
   'updateService' : IDL.Func([ServiceId, CreateServiceInput], [], []),
+  'updateWorkOrder' : IDL.Func([WorkOrderId, UpdateWorkOrderInput], [], []),
+  'updateWorkOrderPhoto' : IDL.Func(
+      [WorkOrderId, PhotoId, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
+      [],
+      [],
+    ),
 });
 
 export const idlInitArgs = [];
@@ -190,6 +262,7 @@ export const idlFactory = ({ IDL }) => {
   const CustomerId = IDL.Nat;
   const InvoiceId = IDL.Nat;
   const PhotoId = IDL.Text;
+  const WorkOrderId = IDL.Nat;
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
@@ -228,6 +301,30 @@ export const idlFactory = ({ IDL }) => {
     'quantity' : Quantity,
     'unitPrice' : Price,
   });
+  const WorkOrderStatus = IDL.Variant({
+    'sent_for_approval' : IDL.Null,
+    'cancelled' : IDL.Null,
+    'pending_payment' : IDL.Null,
+    'in_progress' : IDL.Null,
+    'complete' : IDL.Null,
+    'approved' : IDL.Null,
+    'finalized' : IDL.Null,
+  });
+  const Photo = IDL.Record({
+    'id' : PhotoId,
+    'contentType' : IDL.Text,
+    'filename' : IDL.Opt(IDL.Text),
+    'blobId' : IDL.Text,
+  });
+  const CreateWorkOrderInput = IDL.Record({
+    'status' : WorkOrderStatus,
+    'cost' : IDL.Nat,
+    'description' : IDL.Text,
+    'notes' : IDL.Opt(IDL.Text),
+    'customerId' : CustomerId,
+    'services' : IDL.Vec(ServiceId),
+    'images' : IDL.Opt(IDL.Vec(Photo)),
+  });
   const Name = IDL.Text;
   const Customer = IDL.Record({
     'id' : CustomerId,
@@ -236,16 +333,11 @@ export const idlFactory = ({ IDL }) => {
     'address' : Address,
     'phone' : PhoneNumber,
   });
-  const Photo = IDL.Record({
-    'id' : PhotoId,
-    'contentType' : IDL.Text,
-    'filename' : IDL.Opt(IDL.Text),
-    'blobId' : IDL.Text,
-  });
   const Invoice = IDL.Record({
     'id' : InvoiceId,
     'beforePhotos' : IDL.Vec(Photo),
     'afterPhotos' : IDL.Vec(Photo),
+    'createdAt' : IDL.Nat,
     'isPaid' : IDL.Bool,
     'amountPaid' : IDL.Nat,
     'customerId' : CustomerId,
@@ -253,6 +345,29 @@ export const idlFactory = ({ IDL }) => {
     'items' : IDL.Vec(InvoiceLineItem),
   });
   const UserProfile = IDL.Record({ 'name' : IDL.Text });
+  const WorkOrder = IDL.Record({
+    'id' : WorkOrderId,
+    'status' : WorkOrderStatus,
+    'cost' : IDL.Nat,
+    'createdAt' : IDL.Int,
+    'description' : IDL.Text,
+    'notes' : IDL.Opt(IDL.Text),
+    'customerId' : CustomerId,
+    'services' : IDL.Vec(ServiceId),
+    'images' : IDL.Vec(Photo),
+  });
+  const WorkOrderWithCustomerName = IDL.Record({
+    'id' : WorkOrderId,
+    'customerName' : IDL.Text,
+    'status' : WorkOrderStatus,
+    'cost' : IDL.Nat,
+    'createdAt' : IDL.Int,
+    'description' : IDL.Text,
+    'message' : IDL.Opt(IDL.Text),
+    'notes' : IDL.Opt(IDL.Text),
+    'services' : IDL.Vec(ServiceId),
+    'images' : IDL.Vec(Photo),
+  });
   const CustomerInput = IDL.Record({
     'name' : Name,
     'email' : Email,
@@ -262,6 +377,15 @@ export const idlFactory = ({ IDL }) => {
   const InvoiceInput = IDL.Record({
     'customerId' : CustomerId,
     'items' : IDL.Vec(InvoiceLineItem),
+  });
+  const UpdateWorkOrderInput = IDL.Record({
+    'status' : WorkOrderStatus,
+    'cost' : IDL.Nat,
+    'description' : IDL.Text,
+    'notes' : IDL.Opt(IDL.Text),
+    'customerId' : CustomerId,
+    'services' : IDL.Vec(ServiceId),
+    'images' : IDL.Opt(IDL.Vec(Photo)),
   });
   
   return IDL.Service({
@@ -302,6 +426,11 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
+    'addWorkOrderPhoto' : IDL.Func(
+        [WorkOrderId, PhotoId, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
+        [],
+        [],
+      ),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'bulkImportServices' : IDL.Func(
         [IDL.Vec(CreateServiceInput)],
@@ -314,6 +443,8 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'createService' : IDL.Func([CreateServiceInput], [ServiceId], []),
+    'createWorkOrder' : IDL.Func([CreateWorkOrderInput], [WorkOrderId], []),
+    'deleteWorkOrder' : IDL.Func([WorkOrderId], [], []),
     'getAllCustomers' : IDL.Func([], [IDL.Vec(Customer)], ['query']),
     'getAllInvoices' : IDL.Func([], [IDL.Vec(Invoice)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
@@ -325,14 +456,27 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
+    'getWorkOrder' : IDL.Func([WorkOrderId], [IDL.Opt(WorkOrder)], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'listServices' : IDL.Func([], [IDL.Vec(Service)], ['query']),
+    'listWorkOrders' : IDL.Func(
+        [],
+        [IDL.Vec(WorkOrderWithCustomerName)],
+        ['query'],
+      ),
     'recordPayment' : IDL.Func([InvoiceId, IDL.Nat], [IDL.Bool], []),
     'removeInvoicePhoto' : IDL.Func([InvoiceId, PhotoId, IDL.Bool], [], []),
+    'removeWorkOrderPhoto' : IDL.Func([WorkOrderId, PhotoId], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'updateCustomer' : IDL.Func([CustomerId, CustomerInput], [], []),
     'updateInvoice' : IDL.Func([InvoiceId, InvoiceInput], [], []),
     'updateService' : IDL.Func([ServiceId, CreateServiceInput], [], []),
+    'updateWorkOrder' : IDL.Func([WorkOrderId, UpdateWorkOrderInput], [], []),
+    'updateWorkOrderPhoto' : IDL.Func(
+        [WorkOrderId, PhotoId, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
+        [],
+        [],
+      ),
   });
 };
 
