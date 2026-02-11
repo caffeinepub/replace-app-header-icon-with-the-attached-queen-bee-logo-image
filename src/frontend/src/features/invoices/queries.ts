@@ -2,8 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '@/hooks/useActor';
 import { useAuthStatus } from '@/hooks/useAuthStatus';
 import { queryKeys } from '@/api/queryKeys';
-import { normalizeError } from '@/api/backendClient';
-import type { Invoice, InvoiceLineItem, Customer, InvoiceInput } from '@/backend';
+import { createAppError, normalizeError } from '@/api/backendClient';
+import type { Invoice, InvoiceLineItem, UpdatedCustomer, InvoiceInput } from '@/backend';
 import type { InvoiceFormData } from './types';
 import { parseCurrency, parsePercent, clampPercent } from './types';
 
@@ -11,11 +11,15 @@ export function useInvoices() {
   const { actor, isFetching: isActorFetching } = useActor();
   const { isAuthenticated } = useAuthStatus();
 
-  return useQuery<Invoice[]>({
+  return useQuery<Invoice[], Error>({
     queryKey: queryKeys.invoices.all,
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllInvoices();
+      try {
+        return await actor.getAllInvoices();
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     enabled: !!actor && !isActorFetching && isAuthenticated,
   });
@@ -25,11 +29,15 @@ export function useInvoice(id: bigint | null) {
   const { actor, isFetching: isActorFetching } = useActor();
   const { isAuthenticated } = useAuthStatus();
 
-  return useQuery<Invoice | null>({
+  return useQuery<Invoice | null, Error>({
     queryKey: queryKeys.invoices.detail(id?.toString() || '0'),
     queryFn: async () => {
       if (!actor || !id) return null;
-      return actor.getInvoice(id);
+      try {
+        return await actor.getInvoice(id);
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     enabled: !!actor && !isActorFetching && !!id && isAuthenticated,
   });
@@ -39,11 +47,15 @@ export function useCustomers() {
   const { actor, isFetching: isActorFetching } = useActor();
   const { isAuthenticated } = useAuthStatus();
 
-  return useQuery<Customer[]>({
+  return useQuery<UpdatedCustomer[], Error>({
     queryKey: queryKeys.customers.all,
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllCustomers();
+      try {
+        return await actor.getAllCustomers();
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     enabled: !!actor && !isActorFetching && isAuthenticated,
   });
@@ -57,23 +69,27 @@ export function useCreateInvoice() {
     mutationFn: async (data: InvoiceFormData) => {
       if (!actor) throw new Error('Backend not initialized');
       
-      const items: InvoiceLineItem[] = data.items.map((item) => {
-        const quantity = BigInt(parseInt(item.quantity) || 0);
-        const unitPrice = parseCurrency(item.unitPrice);
-        const discountPercent = parsePercent(item.discount || '0');
-        
-        // Clamp discount percentage to 0-100 range
-        const clampedPercent = clampPercent(discountPercent);
-        
-        return {
-          description: item.description,
-          quantity,
-          unitPrice,
-          discount: BigInt(Math.floor(clampedPercent)), // Send as whole number percentage
-        };
-      });
+      try {
+        const items: InvoiceLineItem[] = data.items.map((item) => {
+          const quantity = BigInt(parseInt(item.quantity) || 0);
+          const unitPrice = parseCurrency(item.unitPrice);
+          const discountPercent = parsePercent(item.discount || '0');
+          
+          // Clamp discount percentage to 0-100 range
+          const clampedPercent = clampPercent(discountPercent);
+          
+          return {
+            description: item.description,
+            quantity,
+            unitPrice,
+            discount: BigInt(Math.floor(clampedPercent)), // Send as whole number percentage
+          };
+        });
 
-      return actor.createInvoice(data.customerId, items);
+        return await actor.createInvoice(data.customerId, items);
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
@@ -92,28 +108,32 @@ export function useUpdateInvoice() {
     mutationFn: async ({ id, data }: { id: bigint; data: InvoiceFormData }) => {
       if (!actor) throw new Error('Backend not initialized');
       
-      const items: InvoiceLineItem[] = data.items.map((item) => {
-        const quantity = BigInt(parseInt(item.quantity) || 0);
-        const unitPrice = parseCurrency(item.unitPrice);
-        const discountPercent = parsePercent(item.discount || '0');
-        
-        // Clamp discount percentage to 0-100 range
-        const clampedPercent = clampPercent(discountPercent);
-        
-        return {
-          description: item.description,
-          quantity,
-          unitPrice,
-          discount: BigInt(Math.floor(clampedPercent)), // Send as whole number percentage
+      try {
+        const items: InvoiceLineItem[] = data.items.map((item) => {
+          const quantity = BigInt(parseInt(item.quantity) || 0);
+          const unitPrice = parseCurrency(item.unitPrice);
+          const discountPercent = parsePercent(item.discount || '0');
+          
+          // Clamp discount percentage to 0-100 range
+          const clampedPercent = clampPercent(discountPercent);
+          
+          return {
+            description: item.description,
+            quantity,
+            unitPrice,
+            discount: BigInt(Math.floor(clampedPercent)), // Send as whole number percentage
+          };
+        });
+
+        const input: InvoiceInput = {
+          customerId: data.customerId,
+          items,
         };
-      });
 
-      const input: InvoiceInput = {
-        customerId: data.customerId,
-        items,
-      };
-
-      return actor.updateInvoice(id, input);
+        return await actor.updateInvoice(id, input);
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
@@ -132,7 +152,11 @@ export function useRecordPayment() {
   return useMutation({
     mutationFn: async ({ invoiceId, amount }: { invoiceId: bigint; amount: bigint }) => {
       if (!actor) throw new Error('Backend not initialized');
-      return actor.recordPayment(invoiceId, amount);
+      try {
+        return await actor.recordPayment(invoiceId, amount);
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
@@ -165,7 +189,11 @@ export function useAddInvoicePhoto() {
       contentType: string;
     }) => {
       if (!actor) throw new Error('Backend not initialized');
-      return actor.addInvoicePhoto(invoiceId, photoId, isBefore, blobId, filename, contentType);
+      try {
+        return await actor.addInvoicePhoto(invoiceId, photoId, isBefore, blobId, filename, contentType);
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(variables.invoiceId.toString()) });
@@ -191,7 +219,11 @@ export function useRemoveInvoicePhoto() {
       isBefore: boolean;
     }) => {
       if (!actor) throw new Error('Backend not initialized');
-      return actor.removeInvoicePhoto(invoiceId, photoId, isBefore);
+      try {
+        return await actor.removeInvoicePhoto(invoiceId, photoId, isBefore);
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(variables.invoiceId.toString()) });

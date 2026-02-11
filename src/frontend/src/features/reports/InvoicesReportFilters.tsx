@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon, X } from 'lucide-react';
 import { format } from 'date-fns';
-import type { Customer } from '@/backend';
+import type { UpdatedCustomer } from '@/backend';
 
 type FilterType = 'all' | 'paid' | 'unpaid';
 
@@ -16,7 +16,7 @@ interface InvoicesReportFiltersProps {
   // Customer filter
   selectedCustomerId: string;
   onCustomerChange: (customerId: string) => void;
-  customers: Customer[];
+  customers: UpdatedCustomer[];
   
   // Date range filter
   startDate: Date | null;

@@ -1,38 +1,84 @@
 {
   "kind": "build_request",
-  "title": "Retry build and resolve deployment failure",
-  "priority": "high",
+  "title": "Create proper printable invoice layout (not a screen print)",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-15",
-      "text": "Retry the application build and deployment, capture the full deployment error output, and fix the underlying issue so the canisters and frontend deploy successfully on the Internet Computer.",
-      "target": "unknown",
+      "id": "REQ-1",
+      "text": "Implement a dedicated, print-optimized invoice document layout that prints as a clean invoice (not a copy of the on-screen invoice detail UI). The printed output must exclude all app navigation/actions and exclude photo sections and edit/payment UI, while including core invoice information (logo, invoice number, paid/unpaid status, customer details, business address, line items, totals, and payment instructions).",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-user-1"
         ],
         "quotes": [
-          "Try again"
+          "I need the app to be able to print a proper invoice, not a copy of the screen"
         ]
       },
       "acceptanceCriteria": [
-        "A new build + deploy attempt completes without errors.",
-        "If the deploy fails again, the full error output (including stack trace/log lines) is captured and surfaced in the deployment output for diagnosis.",
-        "After the fix, `dfx deploy` (or the platform’s equivalent deployment command) succeeds for both backend and frontend artifacts."
+        "Clicking Print from the invoice detail page prints a document-style invoice layout (not cards/buttons/tabs from the app UI).",
+        "The printed output does not include the top action bar (Back/Print/Download/Edit) and does not include Before/After photo sections.",
+        "The printed output includes: business logo, invoice number, paid/unpaid status, customer name and contact info (when available), BUSINESS_ADDRESS (and TEXT_NUMBER when non-empty), line item table, total amount due, amount paid, balance, and PAYMENT_INSTRUCTIONS.",
+        "The printed output is legible in black-and-white printing and does not depend on the app’s on-screen grid/card layout to look correct."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Change the current Print and Download PDF actions on the invoice detail page to use the dedicated invoice document layout for printing/downloading, rather than relying on printing the current screen view. If a separate print route or print-only view is used, it must render only the invoice document content and then trigger the browser print dialog.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-user-1"
+        ],
+        "quotes": [
+          "print a proper invoice, not a copy of the screen"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Print uses the dedicated invoice document layout.",
+        "Download PDF uses the same dedicated invoice document layout and results in a browser print dialog suitable for saving as PDF.",
+        "No additional backend calls are required beyond the existing invoice/customer queries already used for the invoice detail page."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Update/extend print CSS so the invoice document layout prints with consistent page sizing/margins and avoids awkward page breaks in tables/sections, while keeping the regular (non-print) invoice detail page unchanged for on-screen use.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-user-1"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Printed invoice uses consistent page margins and a standard page size already used by the app’s print rules (e.g., letter).",
+        "Line items table does not break mid-row; major sections avoid splitting across pages when feasible.",
+        "Non-print (screen) layout remains functional and visually unchanged aside from Print/Download behavior improvements."
       ]
     }
   ],
   "constraints": [
-    "Use English for any user-facing text.",
-    "Backend must remain a single Motoko actor (no additional backend services).",
-    "Do not modify files under frontend/src/components/ui or other immutable frontend paths listed in SYSTEM_CONTEXT."
+    "Frontend immutable paths must not be edited: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
+    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services."
   ],
   "nonGoals": [
-    "Adding new product features unrelated to build/deploy stability.",
-    "Changing backend data models or adding migrations unless required to fix the deployment failure."
+    "Generating PDFs server-side or adding a PDF generation library/service.",
+    "Emailing invoices or adding external integrations for document delivery.",
+    "Changing invoice data fields or backend invoice schema unless strictly necessary for printing (not requested)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [
+      "Use English for any user-facing text"
+    ],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

@@ -1,49 +1,53 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-05T17:57:22.341Z",
-  "summary": "Diff focuses on frontend runtime error normalization and UI surfacing of technical details (stack/raw error, request/canister/method) via AsyncState and a StartupErrorBoundary. There is no evidence of changes to build/deploy tooling or of a new build/deploy attempt with captured deployment logs, so REQ-15’s deploy-success and deploy-log capture aspects are not implemented in the shown diff.",
+  "generatedAt": "2026-02-11T23:25:40.282Z",
+  "summary": "Diff adds a dedicated print route (/invoices/$invoiceId/print) that renders a new InvoiceDocument component and triggers window.print(), updates InvoiceDetailPage Print/Download actions to navigate to that route, and adds/extends print CSS (letter page, margins, page-break rules, .no-print). However, some required invoice fields in the printed document (totals/amounts/payment instructions) are not clearly evidenced in the truncated InvoiceDocument diff, and several unrelated changes appear (services UI edits, watermark styles, and generalized error handling summaries).",
   "missing_requirements": [
     {
-      "id": "REQ-15",
-      "requirement": "Retry the application build and deployment, capture the full deployment error output, and fix the underlying issue so the canisters and frontend deploy successfully on the Internet Computer.",
-      "reason": "The diff shows only frontend TypeScript/React changes for runtime error handling and UI display. There are no changes to deployment configuration/scripts, no backend/canister build adjustments, and no evidence of capturing and surfacing full *deployment* command output/stack traces for diagnosis, nor evidence that `dfx deploy` now succeeds.",
+      "id": "REQ-1",
+      "requirement": "Printed output includes total amount due, amount paid, balance, and PAYMENT_INSTRUCTIONS.",
+      "reason": "InvoiceDocument.tsx is truncated before showing any totals section or payment instructions rendering; the visible portion only shows header (logo/number/paid status), business/customer blocks, and the start of the line-items table.",
       "evidence": [
-        "frontend/src/api/backendClient.ts",
-        "frontend/src/components/AsyncState.tsx",
-        "frontend/src/components/StartupErrorBoundary.tsx"
+        "frontend/src/features/invoices/InvoiceDocument.tsx (truncated)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Frontend runtime error classification (stopped canister / authorization) and user-friendly messaging with parsed technical details (requestId/canisterId/method/rawError/stack).",
-      "reason": "REQ-15 is about build/deploy failure resolution and capturing *deployment* error output; these runtime UX/error-normalization enhancements are not explicitly requested and may be considered new functionality beyond deploy stability work.",
+      "description": "Invoice watermark styling (background watermark container) added to global CSS.",
+      "reason": "BuildRequest focuses on print-optimized invoice layout and print CSS for margins/page breaks; it does not request adding watermark behavior.",
       "evidence": [
-        "frontend/src/api/backendClient.ts"
+        "frontend/src/index.css"
       ]
     },
     {
-      "description": "UI for displaying and copying technical error details in AsyncState error cards (collapsible ‘Technical details’, copy-to-clipboard).",
-      "reason": "Not explicitly required by REQ-15; it surfaces runtime error diagnostics to users rather than capturing deployment command output.",
+      "description": "Service pages navigation/behavior adjustments (ServiceEditPage/ServicesPage changes).",
+      "reason": "BuildRequest is specifically about invoice printing/print layout; services feature changes are out of scope.",
       "evidence": [
-        "frontend/src/components/AsyncState.tsx"
+        "frontend/src/features/services/ServiceEditPage.tsx",
+        "frontend/src/features/services/ServicesPage.tsx"
       ]
     },
     {
-      "description": "New/expanded StartupErrorBoundary UI with technical details and copy-to-clipboard for startup errors.",
-      "reason": "Not explicitly requested by REQ-15; focuses on frontend runtime startup errors instead of build/deploy pipeline failures.",
+      "description": "Generalized backend client error normalization and stopped-canister guidance (per file summaries).",
+      "reason": "Not requested by the invoice printing requirements; appears to be unrelated robustness work.",
       "evidence": [
-        "frontend/src/components/StartupErrorBoundary.tsx"
+        "frontend-file-summaries.txt (mentions frontend/src/api/backendClient.ts changes)"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.62,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/api/backendClient.ts",
-    "frontend/src/components/AsyncState.tsx",
-    "frontend/src/components/StartupErrorBoundary.tsx",
+    "frontend/src/App.tsx",
+    "frontend/src/components/AppShell.tsx",
+    "frontend/src/features/invoices/InvoiceDetailPage.tsx",
+    "frontend/src/features/invoices/InvoiceDocument.tsx",
+    "frontend/src/features/invoices/InvoicePrintPage.tsx",
+    "frontend/src/features/services/ServiceEditPage.tsx",
+    "frontend/src/features/services/ServicesPage.tsx",
+    "frontend/src/index.css",
     "project_state.json"
   ]
 }

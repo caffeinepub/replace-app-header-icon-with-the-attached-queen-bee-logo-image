@@ -1,18 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '@/hooks/useActor';
 import { queryKeys } from '@/api/queryKeys';
-import { normalizeError } from '@/api/backendClient';
-import type { Customer, CustomerInput } from '@/backend';
+import { createAppError, normalizeError } from '@/api/backendClient';
+import type { UpdatedCustomer, CustomerInput, WorkOrder } from '@/backend';
 import type { CustomerFormData } from './types';
+
+export type Customer = UpdatedCustomer;
 
 export function useCustomers() {
   const { actor, isFetching: isActorFetching } = useActor();
 
-  return useQuery<Customer[]>({
+  return useQuery<Customer[], Error>({
     queryKey: queryKeys.customers.all,
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllCustomers();
+      try {
+        return await actor.getAllCustomers();
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     enabled: !!actor && !isActorFetching,
   });
@@ -21,11 +27,15 @@ export function useCustomers() {
 export function useCustomer(id: bigint | null) {
   const { actor, isFetching: isActorFetching } = useActor();
 
-  return useQuery<Customer | null>({
+  return useQuery<Customer | null, Error>({
     queryKey: queryKeys.customers.detail(id?.toString() || '0'),
     queryFn: async () => {
       if (!actor || !id) return null;
-      return actor.getCustomer(id);
+      try {
+        return await actor.getCustomer(id);
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     enabled: !!actor && !isActorFetching && !!id,
   });
@@ -38,7 +48,20 @@ export function useCreateCustomer() {
   return useMutation({
     mutationFn: async (data: CustomerFormData) => {
       if (!actor) throw new Error('Backend not initialized');
-      return actor.addCustomer(data.name, data.phone, data.address, data.email);
+      try {
+        const input: CustomerInput = {
+          name: data.name,
+          phone: data.phone,
+          address: data.address,
+          email: data.email,
+          guitars: data.guitars,
+        };
+        const customerId = await actor.addCustomer(data.name, data.phone, data.address, data.email);
+        await actor.updateCustomer(customerId, input);
+        return customerId;
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
@@ -57,14 +80,19 @@ export function useUpdateCustomer() {
     mutationFn: async ({ id, data }: { id: bigint; data: CustomerFormData }) => {
       if (!actor) throw new Error('Backend not initialized');
       
-      const input: CustomerInput = {
-        name: data.name,
-        phone: data.phone,
-        address: data.address,
-        email: data.email,
-      };
-      
-      return actor.updateCustomer(id, input);
+      try {
+        const input: CustomerInput = {
+          name: data.name,
+          phone: data.phone,
+          address: data.address,
+          email: data.email,
+          guitars: data.guitars,
+        };
+        
+        return await actor.updateCustomer(id, input);
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
@@ -73,5 +101,47 @@ export function useUpdateCustomer() {
     onError: (error) => {
       throw new Error(normalizeError(error));
     },
+  });
+}
+
+export function useCustomerWorkOrders(customerId: bigint | null) {
+  const { actor, isFetching: isActorFetching } = useActor();
+
+  return useQuery<{ ongoing: WorkOrder[]; completed: WorkOrder[] }, Error>({
+    queryKey: [...queryKeys.customers.detail(customerId?.toString() || '0'), 'workOrders'],
+    queryFn: async () => {
+      if (!actor || !customerId) return { ongoing: [], completed: [] };
+      try {
+        const allWorkOrders = await actor.listWorkOrders();
+        
+        // Filter work orders by matching customerId from the full work order data
+        const customerWorkOrdersWithDetails = await Promise.all(
+          allWorkOrders
+            .filter(wo => wo.id)
+            .map(async (wo) => {
+              try {
+                const fullWorkOrder = await actor.getWorkOrder(wo.id);
+                return fullWorkOrder;
+              } catch {
+                return null;
+              }
+            })
+        );
+        
+        const customerWorkOrders = customerWorkOrdersWithDetails
+          .filter((wo): wo is WorkOrder => 
+            wo !== null && 
+            wo.customerId.toString() === customerId.toString()
+          );
+        
+        const ongoing = customerWorkOrders.filter(wo => wo.status !== 'complete');
+        const completed = customerWorkOrders.filter(wo => wo.status === 'complete');
+        
+        return { ongoing, completed };
+      } catch (error) {
+        throw createAppError(error);
+      }
+    },
+    enabled: !!actor && !isActorFetching && !!customerId,
   });
 }

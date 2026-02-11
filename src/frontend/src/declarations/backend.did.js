@@ -88,9 +88,15 @@ export const CreateWorkOrderInput = IDL.Record({
   'services' : IDL.Vec(ServiceId),
   'images' : IDL.Opt(IDL.Vec(Photo)),
 });
+export const GuitarDetails = IDL.Record({
+  'model' : IDL.Text,
+  'make' : IDL.Text,
+  'serialNumber' : IDL.Text,
+});
 export const Name = IDL.Text;
-export const Customer = IDL.Record({
+export const UpdatedCustomer = IDL.Record({
   'id' : CustomerId,
+  'guitars' : IDL.Vec(GuitarDetails),
   'name' : Name,
   'email' : Email,
   'address' : Address,
@@ -132,6 +138,7 @@ export const WorkOrderWithCustomerName = IDL.Record({
   'images' : IDL.Vec(Photo),
 });
 export const CustomerInput = IDL.Record({
+  'guitars' : IDL.Vec(GuitarDetails),
   'name' : Name,
   'email' : Email,
   'address' : Address,
@@ -208,11 +215,11 @@ export const idlService = IDL.Service({
   'createService' : IDL.Func([CreateServiceInput], [ServiceId], []),
   'createWorkOrder' : IDL.Func([CreateWorkOrderInput], [WorkOrderId], []),
   'deleteWorkOrder' : IDL.Func([WorkOrderId], [], []),
-  'getAllCustomers' : IDL.Func([], [IDL.Vec(Customer)], ['query']),
+  'getAllCustomers' : IDL.Func([], [IDL.Vec(UpdatedCustomer)], ['query']),
   'getAllInvoices' : IDL.Func([], [IDL.Vec(Invoice)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getCustomer' : IDL.Func([CustomerId], [IDL.Opt(Customer)], ['query']),
+  'getCustomer' : IDL.Func([CustomerId], [IDL.Opt(UpdatedCustomer)], ['query']),
   'getInvoice' : IDL.Func([InvoiceId], [IDL.Opt(Invoice)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
@@ -325,9 +332,15 @@ export const idlFactory = ({ IDL }) => {
     'services' : IDL.Vec(ServiceId),
     'images' : IDL.Opt(IDL.Vec(Photo)),
   });
+  const GuitarDetails = IDL.Record({
+    'model' : IDL.Text,
+    'make' : IDL.Text,
+    'serialNumber' : IDL.Text,
+  });
   const Name = IDL.Text;
-  const Customer = IDL.Record({
+  const UpdatedCustomer = IDL.Record({
     'id' : CustomerId,
+    'guitars' : IDL.Vec(GuitarDetails),
     'name' : Name,
     'email' : Email,
     'address' : Address,
@@ -369,6 +382,7 @@ export const idlFactory = ({ IDL }) => {
     'images' : IDL.Vec(Photo),
   });
   const CustomerInput = IDL.Record({
+    'guitars' : IDL.Vec(GuitarDetails),
     'name' : Name,
     'email' : Email,
     'address' : Address,
@@ -445,11 +459,15 @@ export const idlFactory = ({ IDL }) => {
     'createService' : IDL.Func([CreateServiceInput], [ServiceId], []),
     'createWorkOrder' : IDL.Func([CreateWorkOrderInput], [WorkOrderId], []),
     'deleteWorkOrder' : IDL.Func([WorkOrderId], [], []),
-    'getAllCustomers' : IDL.Func([], [IDL.Vec(Customer)], ['query']),
+    'getAllCustomers' : IDL.Func([], [IDL.Vec(UpdatedCustomer)], ['query']),
     'getAllInvoices' : IDL.Func([], [IDL.Vec(Invoice)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getCustomer' : IDL.Func([CustomerId], [IDL.Opt(Customer)], ['query']),
+    'getCustomer' : IDL.Func(
+        [CustomerId],
+        [IDL.Opt(UpdatedCustomer)],
+        ['query'],
+      ),
     'getInvoice' : IDL.Func([InvoiceId], [IDL.Opt(Invoice)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],

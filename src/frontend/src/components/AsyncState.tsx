@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Loader2, AlertCircle, Inbox, ChevronDown, Copy, Check } from 'lucide-react';
+import { Loader2, AlertCircle, Inbox, ChevronDown, Copy, Check, RefreshCw } from 'lucide-react';
 import type { AppError } from '@/api/backendClient';
 
 interface AsyncStateProps {
@@ -47,6 +47,7 @@ export default function AsyncState({
 
   if (isError) {
     const appError = error as AppError | undefined;
+    const isStoppedCanister = appError?.errorClass === 'stopped-canister';
     const hasTechnicalDetails = appError?.technicalDetails && (
       appError.technicalDetails.requestId ||
       appError.technicalDetails.canisterId ||
@@ -97,6 +98,15 @@ export default function AsyncState({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {isStoppedCanister && (
+            <div className="rounded-md border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950 p-3 text-sm">
+              <p className="font-medium text-amber-900 dark:text-amber-100">Backend Canister Stopped</p>
+              <p className="mt-1 text-amber-800 dark:text-amber-200">
+                The backend canister must be restarted or redeployed by the app operator. 
+                If you manage this application, please check the deployment troubleshooting guide.
+              </p>
+            </div>
+          )}
           {hasTechnicalDetails && (
             <Collapsible open={isTechnicalOpen} onOpenChange={setIsTechnicalOpen}>
               <CollapsibleTrigger asChild>
@@ -164,7 +174,8 @@ export default function AsyncState({
             </Collapsible>
           )}
           {onRetry && (
-            <Button onClick={onRetry} variant="outline">
+            <Button onClick={onRetry} variant="outline" className="gap-2">
+              <RefreshCw className="h-4 w-4" />
               Try Again
             </Button>
           )}

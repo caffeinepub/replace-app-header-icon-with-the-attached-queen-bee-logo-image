@@ -1,319 +1,32 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 106,
-  "summary": "ICP canister-based web app scaffolded with Motoko backend and React/Vite frontend, including Internet Identity authentication, core UI shell/branding, Customers/Invoices/Services CRUD-style pages with backend access-control/authorization support, updated Services data model/table columns and edit flow with backwards-compatible bulk import mapping, invoice photo attachment support backed by a Motoko blob-storage module, a Work Orders feature (pages/forms/queries) including photo attachment UI, and an Invoices Reports page for viewing invoice reporting data.",
-  "architectural_notes": [
-    "Frontend uses React + Vite with Tailwind and shadcn/ui component primitives.",
-    "Authentication is handled via Internet Identity; frontend creates an authenticated canister actor for API calls.",
-    "Feature structure introduced for Customers and Invoices with colocated types/queries/components.",
-    "Typed canister bindings (.did JS/TS) are included for frontend-backend integration.",
-    "Build/deploy templating added (Dockerfile/scripts/icp yaml) for reproducible ICP builds.",
-    "Custom frontend ESLint rules added to enforce stable query keys (no bigint) and required Internet Identity provider configuration.",
-    "Motoko backend includes a dedicated migration module to manage canister state changes across upgrades (schema/data migrations coordinated with main canister code).",
-    "Backend now includes a dedicated authorization/access-control layer (mixin + module) used by the main canister to gate privileged operations.",
-    "Build template, backend authorization layer, and blob-storage module were refreshed to newer upstream component versions (e.g., core-infrastructure v1.0.2, authorization v4.0.0, blob-storage v4.0.0).",
-    "Work Orders feature added using the same feature module pattern (types/queries/components) as Customers/Invoices/Services, including a photo section UI and auth-gated states."
-  ],
-  "known_issues": [
-    "Invoice watermark is not rendering/visible in the invoice UI (user reports 'There was no watermark')."
-  ],
-  "isFixRequest": true,
-  "generatedImages": [
-    {
-      "filename": "frontend/public/assets/generated/queen-bee-invoice-logo.dim_512x512.png",
-      "description": "Generated invoice logo asset",
-      "targetWidth": 512,
-      "targetHeight": 512
-    },
-    {
-      "filename": "frontend/public/assets/generated/queen-bee-invoice-watermark.dim_1200x1200.png",
-      "description": "Generated invoice watermark asset",
-      "targetWidth": 1200,
-      "targetHeight": 1200
-    }
-  ],
+  "projectStateVersion": 3,
+  "summary": "Build an app that can generate and print properly formatted invoices (not just printing the on-screen view).",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "IF-1",
-      "title": "Motoko backend canister scaffold",
-      "synonyms": [
-        "backend canister",
-        "Motoko service"
-      ],
-      "description": "Initial Motoko backend setup with candid bindings and project build/deploy configuration for ICP.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-2",
-      "title": "React + Vite frontend scaffold",
-      "synonyms": [
-        "frontend app shell",
-        "Vite React app"
-      ],
-      "description": "Frontend application scaffold including routing/layout shell, Tailwind setup, and build tooling.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-3",
-      "title": "Internet Identity authentication integration",
-      "synonyms": [
-        "II auth",
-        "Internet Identity login"
-      ],
-      "description": "Client hooks and configuration to authenticate users via Internet Identity and create an authenticated actor for backend calls.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-4",
-      "title": "Backend client + typed declarations",
-      "synonyms": [
-        "backendClient",
-        "candid typings"
-      ],
-      "description": "Typed frontend bindings and client utilities for calling the backend canister (generated .did JS/TS and helper client).",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-5",
-      "title": "App shell with branding assets",
-      "synonyms": [
-        "BrandHeader",
-        "AppShell"
-      ],
-      "description": "Core UI shell components and generated brand images (logo, header banner, icons) wired into the frontend.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-6",
-      "title": "Shadcn UI component library integrated",
-      "synonyms": [
-        "shadcn/ui",
-        "UI primitives"
-      ],
-      "description": "Large set of reusable UI primitives (buttons, dialogs, forms, tables, etc.) added to the frontend component library.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-7",
-      "title": "Customers feature pages and form",
-      "synonyms": [
-        "CustomersPage",
-        "CustomerForm"
-      ],
-      "description": "Initial Customers feature implementation including types, queries, list page and create/edit form UI.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-8",
-      "title": "Invoices feature pages and editor",
-      "synonyms": [
-        "InvoicesPage",
-        "InvoiceForm",
-        "InvoiceDetailPage"
-      ],
-      "description": "Initial Invoices feature implementation including list/detail pages, invoice form, and line item editor UI with types and queries.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-9",
-      "title": "Client-side query key and storage utilities",
-      "synonyms": [
-        "queryKeys",
-        "StorageClient"
-      ],
-      "description": "Shared utilities for stable query keys and local/persistent client storage helpers used across features.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-10",
-      "title": "Build template and deployment scripts",
-      "synonyms": [
-        "build-template",
-        "Dockerfile",
-        "deploy.sh"
-      ],
-      "description": "Project build template files (Dockerfile, scripts, workspace config, ICP yaml/canister configs) to support repeatable builds and deployment.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-11",
-      "title": "Backend data migration support (Motoko)",
-      "synonyms": [
-        "migration.mo",
-        "schema migration",
-        "upgrade hooks"
-      ],
-      "description": "Introduced a Motoko migration module to support canister state evolution across upgrades (structured migration path alongside main canister logic).",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-12",
-      "title": "Services feature pages and form",
-      "synonyms": [
-        "ServicesPage",
-        "ServiceItemForm"
-      ],
-      "description": "Initial Services feature implementation including types, queries, list page and create/edit form UI (mirrors Customers/Invoices feature structure).",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-13",
-      "title": "Backend authorization and access control module",
-      "synonyms": [
-        "access control",
-        "authorization mixin",
-        "ACL"
-      ],
-      "description": "Motoko backend authorization layer (authorization mixin + access-control module) integrated into main canister to enforce privileged operations and support future role/permission expansion.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-14",
-      "title": "Services bulk import (UI + parsing)",
-      "synonyms": [
-        "ServiceBulkImportDialog",
-        "service import CSV/TSV"
-      ],
-      "description": "Adds a bulk import dialog for Services along with client-side parsing utilities to ingest multiple service items in one flow.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-15",
-      "title": "Customer detail dialog UI",
-      "synonyms": [
-        "CustomerDetailDialog"
-      ],
-      "description": "Adds a customer detail dialog/modal to view customer information from the Customers feature UI.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-16",
-      "title": "Services editing + expanded Service fields (Name, Service Type, Price, Service, Notes) with migration and import compatibility",
-      "synonyms": [
-        "edit service",
-        "updateService",
-        "Services table columns update",
-        "service schema update"
-      ],
-      "description": "Updates the Service data model and Services UI table to use the columns (in order): Name, Service Type, Price, Service, Notes; adds backend support to update existing Services with authorization checks; adds a Services UI edit flow from the list; and keeps Services bulk import functional by mapping both the updated fields and the legacy 3-column import format in a backwards-compatible way (including upgrade readability via migration where needed).",
+      "id": "feature-implement-a-dedicated-print-optimized-invoice-document-layout-that-prints-as-a-clean-invoice-not-a-copy-of-the-on-screen-invoice-detail-ui-the-printed-output-must-exclude-all-app-navigation-actions-and-exclude-photo-sections-and-edit-payment-ui-while-including-core-invoice-information-logo-invoice-number-paid-unpaid-status-customer-details-business-address-line-items-totals-and-payment-instructions",
+      "title": "Implement a dedicated, print-optimized invoice document layout that prints as a clean invoice (not a copy of the on-screen invoice detail UI). The printed output must exclude all app navigation/actions and exclude photo sections and edit/payment UI, while including core invoice information (logo, invoice number, paid/unpaid status, customer details, business address, line items, totals, and payment instructions).",
       "reqIds": [
-        "REQ-1",
-        "REQ-2",
-        "REQ-3",
-        "REQ-4",
-        "REQ-5"
+        "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "IF-17",
-      "title": "Invoice photo attachments (UI + blob storage backend)",
-      "synonyms": [
-        "InvoicePhotosSection",
-        "InvoicePhotoPreviewDialog",
-        "blob-storage",
-        "invoice image upload"
-      ],
-      "description": "Adds invoice photo attachment capabilities in the Invoices feature (photos section + preview dialog and related types/queries) backed by a Motoko blob-storage mixin/module for storing and retrieving binary assets, integrated with the main canister and authorization/access-control.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-18",
-      "title": "Work Orders feature pages, forms, and queries (with photos UI section)",
-      "synonyms": [
-        "WorkOrdersPage",
-        "WorkOrderDetailPage",
-        "WorkOrderSheetForm",
-        "WorkOrderCreateDialog",
-        "WorkOrderPhotosSection"
-      ],
-      "description": "Adds a new Work Orders frontend feature area including list and detail pages, create/edit sheet-style form and create dialog, feature-local types and queries, auth-gated sign-in required state, and a photos section UI patterned after existing invoice photo attachments.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-19",
-      "title": "Landing page route",
-      "synonyms": [
-        "LandingPage"
-      ],
-      "description": "Adds a basic Landing page/route to the frontend application routing structure.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-20",
-      "title": "Invoices report page",
-      "synonyms": [
-        "Reports",
-        "InvoicesReportPage",
-        "invoice reporting"
-      ],
-      "description": "Adds a Reports area with an Invoices report page for viewing invoice reporting information in the frontend feature structure.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "feature-add-filter-controls-to-the-invoices-report-page-to-filter-the-displayed-rows-by-payment-status-all-paid-unpaid-customer-and-created-at-date-range",
-      "title": "Add filter controls to the Invoices Report page to filter the displayed rows by: payment status (All/Paid/Unpaid), customer, and created-at date range.",
+      "id": "feature-change-the-current-print-and-download-pdf-actions-on-the-invoice-detail-page-to-use-the-dedicated-invoice-document-layout-for-printing-downloading-rather-than-relying-on-printing-the-current-screen-view-if-a-separate-print-route-or-print-only-view-is-used-it-must-render-only-the-invoice-document-content-and-then-trigger-the-browser-print-dialog",
+      "title": "Change the current Print and Download PDF actions on the invoice detail page to use the dedicated invoice document layout for printing/downloading, rather than relying on printing the current screen view. If a separate print route or print-only view is used, it must render only the invoice document content and then trigger the browser print dialog.",
       "reqIds": [
-        "REQ-7"
+        "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-the-invoices-report-summary-calculations-so-totals-count-and-total-amount-always-reflect-the-currently-filtered-invoice-rows-and-add-a-single-action-to-clear-reset-all-filters-to-defaults",
-      "title": "Update the Invoices Report summary calculations so totals (count and total amount) always reflect the currently filtered invoice rows, and add a single action to clear/reset all filters to defaults.",
+      "id": "feature-update-extend-print-css-so-the-invoice-document-layout-prints-with-consistent-page-sizing-margins-and-avoids-awkward-page-breaks-in-tables-sections-while-keeping-the-regular-non-print-invoice-detail-page-unchanged-for-on-screen-use",
+      "title": "Update/extend print CSS so the invoice document layout prints with consistent page sizing/margins and avoids awkward page breaks in tables/sections, while keeping the regular (non-print) invoice detail page unchanged for on-screen use.",
       "reqIds": [
-        "REQ-8"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-the-invoice-watermark-is-visibly-rendered-anywhere-the-invoice-watermark-styling-is-intended-to-appear-using-the-existing-watermark-asset-and-configuration-paths",
-      "title": "Ensure the invoice watermark is visibly rendered anywhere the invoice watermark styling is intended to appear, using the existing watermark asset and configuration paths.",
-      "reqIds": [
-        "REQ-12"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-invoice-watermark-css-styling-so-the-watermark-appearance-is-reliably-noticeable-across-light-and-dark-themes-and-in-print-styles-within-reasonable-browser-limitations-while-keeping-content-legible",
-      "title": "Update the invoice watermark CSS/styling so the watermark appearance is reliably noticeable across light and dark themes and in print styles (within reasonable browser limitations), while keeping content legible.",
-      "reqIds": [
-        "REQ-13"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-apply-the-invoice-watermark-container-wrapper-consistently-in-the-invoice-ui-so-the-watermark-appears-where-users-expect-it-on-the-invoice-view-not-only-in-a-single-subsection-without-changing-backend-data-models",
-      "title": "Apply the `.invoice-watermark-container` wrapper consistently in the invoice UI so the watermark appears where users expect it on the invoice view (not only in a single subsection), without changing backend data models.",
-      "reqIds": [
-        "REQ-14"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-retry-the-application-build-and-deployment-capture-the-full-deployment-error-output-and-fix-the-underlying-issue-so-the-canisters-and-frontend-deploy-successfully-on-the-internet-computer",
-      "title": "Retry the application build and deployment, capture the full deployment error output, and fix the underlying issue so the canisters and frontend deploy successfully on the Internet Computer.",
-      "reqIds": [
-        "REQ-15"
+        "REQ-3"
       ],
       "version": 1
     }
@@ -321,50 +34,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add filter controls to the invoice-paid/invoices report (e.g., date range, customer, status)",
+      "summary": "Add proper invoice printing (formatted invoice layout for printing/PDF) instead of printing a copy of the screen.",
       "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Extend the backend Invoice data model to store a creation timestamp and preserve it across all invoice updates so the report can support date-based filtering.",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Use the provided image as the invoice logo and invoice watermark in the app (invoice views/print/export as applicable)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Replace the invoice logo asset with a processed version of the uploaded image and ensure all invoice UI that uses the invoice logo renders the new asset (including Invoice detail page header).",
-      "reqIds": [
-        "REQ-9"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Replace the invoice watermark asset with a processed version of the uploaded image and ensure the invoice watermark background uses the new watermark asset via the existing watermark styling (e.g., `.invoice-watermark-container`).",
-      "reqIds": [
-        "REQ-10"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Update invoice branding configuration and styles to reference the updated invoice logo and watermark assets (including `frontend/src/config/invoiceAssets.ts` and any CSS `background-image` references) so the app consistently uses the new files.",
-      "reqIds": [
-        "REQ-11"
-      ],
       "status": "pending"
     }
   ],
-  "projectName": "Enable editing of Services and update Services table headers/fields",
+  "projectName": "Create proper printable invoice layout (not a screen print)",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ArrowLeft, DollarSign, Loader2, Pencil } from 'lucide-react';
+import { ArrowLeft, DollarSign, Loader2, Pencil, Printer, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import AsyncState from '@/components/AsyncState';
 import SignInRequiredState from './SignInRequiredState';
@@ -19,7 +19,6 @@ import { formatCurrency, parseCurrency, formatPercent } from './types';
 import { BUSINESS_ADDRESS, PAYMENT_INSTRUCTIONS, TEXT_NUMBER } from '@/config/invoiceBranding';
 import { INVOICE_LOGO } from '@/config/invoiceAssets';
 import InvoicePhotosSection from './InvoicePhotosSection';
-import type { Invoice } from '@/backend';
 
 export default function InvoiceDetailPage() {
   const { invoiceId } = useParams({ from: '/invoices/$invoiceId' });
@@ -94,6 +93,15 @@ export default function InvoiceDetailPage() {
     setIsEditDialogOpen(false);
   };
 
+  const handlePrint = () => {
+    navigate({ to: '/invoices/$invoiceId/print', params: { invoiceId } });
+  };
+
+  const handleDownload = () => {
+    toast.info('Use "Save as PDF" in the print dialog to download');
+    navigate({ to: '/invoices/$invoiceId/print', params: { invoiceId } });
+  };
+
   // Show sign-in required state when not authenticated
   if (!isInitializing && !isAuthenticated) {
     return (
@@ -139,10 +147,20 @@ export default function InvoiceDetailPage() {
           </div>
         </div>
         {invoice && (
-          <Button onClick={() => setIsEditDialogOpen(true)} className="gap-2">
-            <Pencil className="h-4 w-4" />
-            Edit Invoice
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handlePrint} variant="outline" className="gap-2">
+              <Printer className="h-4 w-4" />
+              Print
+            </Button>
+            <Button onClick={handleDownload} variant="outline" className="gap-2">
+              <Download className="h-4 w-4" />
+              Download PDF
+            </Button>
+            <Button onClick={() => setIsEditDialogOpen(true)} className="gap-2">
+              <Pencil className="h-4 w-4" />
+              Edit Invoice
+            </Button>
+          </div>
         )}
       </div>
 
@@ -155,182 +173,183 @@ export default function InvoiceDetailPage() {
         onRetry={refetch}
       >
         {invoice && (
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Invoice Details</CardTitle>
-                    <Badge variant={invoice.isPaid ? 'default' : 'secondary'}>
-                      {invoice.isPaid ? 'Paid' : 'Unpaid'}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label className="text-muted-foreground">Customer</Label>
-                    <p className="text-lg font-medium">{customer?.name || 'Unknown Customer'}</p>
-                    {customer && (
-                      <div className="text-sm text-muted-foreground mt-1">
-                        <p>{customer.email}</p>
-                        <p>{customer.phone}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <Label className="text-muted-foreground">Business Address</Label>
-                    <p className="text-sm mt-1">{BUSINESS_ADDRESS}</p>
-                    {TEXT_NUMBER && (
-                      <p className="text-sm mt-1">
-                        <span className="font-medium">Text:</span> {TEXT_NUMBER}
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Line Items</CardTitle>
-                  <CardDescription>{invoice.items.length} item(s)</CardDescription>
-                </CardHeader>
-                <CardContent className="invoice-watermark-container">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Description</TableHead>
-                        <TableHead className="text-right">Hourly</TableHead>
-                        <TableHead className="text-right">Unit Price</TableHead>
-                        <TableHead className="text-right">Discount %</TableHead>
-                        <TableHead className="text-right">Total</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {invoice.items.map((item, index) => {
-                        const subtotal = item.unitPrice * item.quantity;
-                        // Calculate discount amount using percentage: floor(subtotal × discount / 100)
-                        const discountAmount = subtotal * item.discount / 100n;
-                        const total = subtotal > discountAmount ? subtotal - discountAmount : 0n;
-                        
-                        return (
-                          <TableRow key={index}>
-                            <TableCell>{item.description}</TableCell>
-                            <TableCell className="text-right">{item.quantity.toString()}</TableCell>
-                            <TableCell className="text-right">
-                              {formatCurrency(item.unitPrice)}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {item.discount > 0n ? formatPercent(item.discount) : '—'}
-                            </TableCell>
-                            <TableCell className="text-right font-medium">
-                              {formatCurrency(total)}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                  <Separator className="my-4" />
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-2xl font-bold">
-                      <span>Total:</span>
-                      <span>{formatCurrency(invoice.amountDue)}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <InvoicePhotosSection
-                title="Before Photos"
-                description="Photos taken before the repair work"
-                photos={invoice.beforePhotos}
-                onUpload={handleUploadPhoto(true)}
-                onRemove={handleRemovePhoto(true)}
-                isUploading={addPhoto.isPending}
-              />
-
-              <InvoicePhotosSection
-                title="After Photos"
-                description="Photos taken after the repair work"
-                photos={invoice.afterPhotos}
-                onUpload={handleUploadPhoto(false)}
-                onRemove={handleRemovePhoto(false)}
-                isUploading={addPhoto.isPending}
-              />
-            </div>
-
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Payment Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Amount Due:</span>
-                      <span className="font-medium">{formatCurrency(invoice.amountDue)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Amount Paid:</span>
-                      <span className="font-medium text-green-600">
-                        {formatCurrency(invoice.amountPaid)}
-                      </span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between text-lg">
-                      <span className="font-semibold">Balance:</span>
-                      <span className="font-bold">
-                        {formatCurrency(invoice.amountDue - invoice.amountPaid)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <Label className="text-muted-foreground text-xs">Payment Instructions</Label>
-                    <p className="text-sm mt-2 leading-relaxed">{PAYMENT_INSTRUCTIONS}</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {!invoice.isPaid && (
+          <div>
+            <div className="grid gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-2 space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Record Payment</CardTitle>
-                    <CardDescription>Enter the payment amount received</CardDescription>
+                    <div className="flex items-center justify-between">
+                      <CardTitle>Invoice Details</CardTitle>
+                      <Badge variant={invoice.isPaid ? 'default' : 'secondary'}>
+                        {invoice.isPaid ? 'Paid' : 'Unpaid'}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label className="text-muted-foreground">Customer</Label>
+                      <p className="text-lg font-medium">{customer?.name || 'Unknown Customer'}</p>
+                      {customer && (
+                        <div className="text-sm text-muted-foreground mt-1">
+                          <p>{customer.email}</p>
+                          <p>{customer.phone}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <Separator />
+
+                    <div>
+                      <Label className="text-muted-foreground">Business Address</Label>
+                      <p className="text-sm mt-1">{BUSINESS_ADDRESS}</p>
+                      {TEXT_NUMBER && (
+                        <p className="text-sm mt-1">
+                          <span className="font-medium">Text:</span> {TEXT_NUMBER}
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Line Items</CardTitle>
+                    <CardDescription>{invoice.items.length} item(s)</CardDescription>
+                  </CardHeader>
+                  <CardContent className="invoice-watermark-container">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Description</TableHead>
+                          <TableHead className="text-right">Hourly</TableHead>
+                          <TableHead className="text-right">Unit Price</TableHead>
+                          <TableHead className="text-right">Discount %</TableHead>
+                          <TableHead className="text-right">Total</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {invoice.items.map((item, index) => {
+                          const subtotal = item.unitPrice * item.quantity;
+                          const discountAmount = subtotal * item.discount / 100n;
+                          const total = subtotal > discountAmount ? subtotal - discountAmount : 0n;
+                          
+                          return (
+                            <TableRow key={index}>
+                              <TableCell>{item.description}</TableCell>
+                              <TableCell className="text-right">{item.quantity.toString()}</TableCell>
+                              <TableCell className="text-right">
+                                {formatCurrency(item.unitPrice)}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {item.discount > 0n ? formatPercent(item.discount) : '—'}
+                              </TableCell>
+                              <TableCell className="text-right font-medium">
+                                {formatCurrency(total)}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                    <Separator className="my-4" />
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-2xl font-bold">
+                        <span>Total:</span>
+                        <span>{formatCurrency(invoice.amountDue)}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <InvoicePhotosSection
+                  title="Before Photos"
+                  description="Photos taken before the repair work"
+                  photos={invoice.beforePhotos}
+                  onUpload={handleUploadPhoto(true)}
+                  onRemove={handleRemovePhoto(true)}
+                  isUploading={addPhoto.isPending}
+                />
+
+                <InvoicePhotosSection
+                  title="After Photos"
+                  description="Photos taken after the repair work"
+                  photos={invoice.afterPhotos}
+                  onUpload={handleUploadPhoto(false)}
+                  onRemove={handleRemovePhoto(false)}
+                  isUploading={addPhoto.isPending}
+                />
+              </div>
+
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Payment Summary</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="payment">Payment Amount</Label>
-                      <Input
-                        id="payment"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={paymentAmount}
-                        onChange={(e) => setPaymentAmount(e.target.value)}
-                        placeholder="0.00"
-                      />
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Amount Due:</span>
+                        <span className="font-medium">{formatCurrency(invoice.amountDue)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Amount Paid:</span>
+                        <span className="font-medium text-green-600">
+                          {formatCurrency(invoice.amountPaid)}
+                        </span>
+                      </div>
+                      <Separator />
+                      <div className="flex justify-between text-lg">
+                        <span className="font-semibold">Balance:</span>
+                        <span className="font-bold">
+                          {formatCurrency(invoice.amountDue - invoice.amountPaid)}
+                        </span>
+                      </div>
                     </div>
-                    <Button
-                      onClick={handleRecordPayment}
-                      disabled={recordPayment.isPending || !paymentAmount}
-                      className="w-full gap-2"
-                    >
-                      {recordPayment.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <DollarSign className="h-4 w-4" />
-                      )}
-                      Record Payment
-                    </Button>
+
+                    <Separator />
+
+                    <div>
+                      <Label className="text-muted-foreground text-xs">Payment Instructions</Label>
+                      <p className="text-sm mt-2 leading-relaxed">{PAYMENT_INSTRUCTIONS}</p>
+                    </div>
                   </CardContent>
                 </Card>
-              )}
+
+                {!invoice.isPaid && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Record Payment</CardTitle>
+                      <CardDescription>Enter the payment amount received</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="payment">Payment Amount</Label>
+                        <Input
+                          id="payment"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={paymentAmount}
+                          onChange={(e) => setPaymentAmount(e.target.value)}
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <Button
+                        onClick={handleRecordPayment}
+                        disabled={recordPayment.isPending || !paymentAmount}
+                        className="w-full gap-2"
+                      >
+                        {recordPayment.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <DollarSign className="h-4 w-4" />
+                        )}
+                        Record Payment
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             </div>
           </div>
         )}

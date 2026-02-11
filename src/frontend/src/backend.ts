@@ -108,6 +108,7 @@ export interface _CaffeineStorageCreateCertificateResult {
     blob_hash: string;
 }
 export interface CustomerInput {
+    guitars: Array<GuitarDetails>;
     name: Name;
     email: Email;
     address: Address;
@@ -127,6 +128,11 @@ export interface WorkOrderWithCustomerName {
 }
 export type PhoneNumber = string;
 export type Quantity = bigint;
+export interface GuitarDetails {
+    model: string;
+    make: string;
+    serialNumber: string;
+}
 export type Email = string;
 export interface Photo {
     id: PhotoId;
@@ -171,6 +177,14 @@ export interface Service {
     notes?: string;
     price?: bigint;
 }
+export interface UpdatedCustomer {
+    id: CustomerId;
+    guitars: Array<GuitarDetails>;
+    name: Name;
+    email: Email;
+    address: Address;
+    phone: PhoneNumber;
+}
 export type Name = string;
 export interface Invoice {
     id: InvoiceId;
@@ -182,13 +196,6 @@ export interface Invoice {
     customerId: CustomerId;
     amountDue: bigint;
     items: Array<InvoiceLineItem>;
-}
-export interface Customer {
-    id: CustomerId;
-    name: Name;
-    email: Email;
-    address: Address;
-    phone: PhoneNumber;
 }
 export interface CreateServiceInput {
     service?: string;
@@ -250,11 +257,11 @@ export interface backendInterface {
     createService(input: CreateServiceInput): Promise<ServiceId>;
     createWorkOrder(input: CreateWorkOrderInput): Promise<WorkOrderId>;
     deleteWorkOrder(workOrderId: WorkOrderId): Promise<void>;
-    getAllCustomers(): Promise<Array<Customer>>;
+    getAllCustomers(): Promise<Array<UpdatedCustomer>>;
     getAllInvoices(): Promise<Array<Invoice>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
-    getCustomer(id: CustomerId): Promise<Customer | null>;
+    getCustomer(id: CustomerId): Promise<UpdatedCustomer | null>;
     getInvoice(id: InvoiceId): Promise<Invoice | null>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getWorkOrder(workOrderId: WorkOrderId): Promise<WorkOrder | null>;
@@ -271,7 +278,7 @@ export interface backendInterface {
     updateWorkOrder(workOrderId: WorkOrderId, input: UpdateWorkOrderInput): Promise<void>;
     updateWorkOrderPhoto(workOrderId: WorkOrderId, photoId: PhotoId, blobId: string, filename: string | null, contentType: string): Promise<void>;
 }
-import type { BulkImportResult as _BulkImportResult, CreateServiceInput as _CreateServiceInput, CreateWorkOrderInput as _CreateWorkOrderInput, Customer as _Customer, CustomerId as _CustomerId, Invoice as _Invoice, InvoiceId as _InvoiceId, InvoiceLineItem as _InvoiceLineItem, Photo as _Photo, PhotoId as _PhotoId, Service as _Service, ServiceId as _ServiceId, UpdateWorkOrderInput as _UpdateWorkOrderInput, UserProfile as _UserProfile, UserRole as _UserRole, WorkOrder as _WorkOrder, WorkOrderId as _WorkOrderId, WorkOrderStatus as _WorkOrderStatus, WorkOrderWithCustomerName as _WorkOrderWithCustomerName, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
+import type { BulkImportResult as _BulkImportResult, CreateServiceInput as _CreateServiceInput, CreateWorkOrderInput as _CreateWorkOrderInput, CustomerId as _CustomerId, Invoice as _Invoice, InvoiceId as _InvoiceId, InvoiceLineItem as _InvoiceLineItem, Photo as _Photo, PhotoId as _PhotoId, Service as _Service, ServiceId as _ServiceId, UpdateWorkOrderInput as _UpdateWorkOrderInput, UpdatedCustomer as _UpdatedCustomer, UserProfile as _UserProfile, UserRole as _UserRole, WorkOrder as _WorkOrder, WorkOrderId as _WorkOrderId, WorkOrderStatus as _WorkOrderStatus, WorkOrderWithCustomerName as _WorkOrderWithCustomerName, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _caffeineStorageBlobIsLive(arg0: Uint8Array): Promise<boolean> {
@@ -498,7 +505,7 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async getAllCustomers(): Promise<Array<Customer>> {
+    async getAllCustomers(): Promise<Array<UpdatedCustomer>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getAllCustomers();
@@ -554,7 +561,7 @@ export class Backend implements backendInterface {
             return from_candid_UserRole_n38(this._uploadFile, this._downloadFile, result);
         }
     }
-    async getCustomer(arg0: CustomerId): Promise<Customer | null> {
+    async getCustomer(arg0: CustomerId): Promise<UpdatedCustomer | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCustomer(arg0);
@@ -821,7 +828,7 @@ function from_candid_opt_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 function from_candid_opt_n37(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Customer]): Customer | null {
+function from_candid_opt_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UpdatedCustomer]): UpdatedCustomer | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_opt_n41(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Invoice]): Invoice | null {

@@ -34,15 +34,9 @@ export interface CreateWorkOrderInput {
   'services' : Array<ServiceId>,
   'images' : [] | [Array<Photo>],
 }
-export interface Customer {
-  'id' : CustomerId,
-  'name' : Name,
-  'email' : Email,
-  'address' : Address,
-  'phone' : PhoneNumber,
-}
 export type CustomerId = bigint;
 export interface CustomerInput {
+  'guitars' : Array<GuitarDetails>,
   'name' : Name,
   'email' : Email,
   'address' : Address,
@@ -51,6 +45,11 @@ export interface CustomerInput {
 export type Description = string;
 export type Discount = bigint;
 export type Email = string;
+export interface GuitarDetails {
+  'model' : string,
+  'make' : string,
+  'serialNumber' : string,
+}
 export interface Invoice {
   'id' : InvoiceId,
   'beforePhotos' : Array<Photo>,
@@ -101,6 +100,14 @@ export interface UpdateWorkOrderInput {
   'customerId' : CustomerId,
   'services' : Array<ServiceId>,
   'images' : [] | [Array<Photo>],
+}
+export interface UpdatedCustomer {
+  'id' : CustomerId,
+  'guitars' : Array<GuitarDetails>,
+  'name' : Name,
+  'email' : Email,
+  'address' : Address,
+  'phone' : PhoneNumber,
 }
 export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
@@ -189,11 +196,11 @@ export interface _SERVICE {
   'createService' : ActorMethod<[CreateServiceInput], ServiceId>,
   'createWorkOrder' : ActorMethod<[CreateWorkOrderInput], WorkOrderId>,
   'deleteWorkOrder' : ActorMethod<[WorkOrderId], undefined>,
-  'getAllCustomers' : ActorMethod<[], Array<Customer>>,
+  'getAllCustomers' : ActorMethod<[], Array<UpdatedCustomer>>,
   'getAllInvoices' : ActorMethod<[], Array<Invoice>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getCustomer' : ActorMethod<[CustomerId], [] | [Customer]>,
+  'getCustomer' : ActorMethod<[CustomerId], [] | [UpdatedCustomer]>,
   'getInvoice' : ActorMethod<[InvoiceId], [] | [Invoice]>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'getWorkOrder' : ActorMethod<[WorkOrderId], [] | [WorkOrder]>,

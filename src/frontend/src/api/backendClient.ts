@@ -16,8 +16,13 @@ export function createAppError(error: unknown): AppError {
   const rawMessage = error instanceof Error ? error.message : String(error);
   const errorStack = error instanceof Error ? error.stack : undefined;
   
-  // Detect stopped canister errors
-  if (rawMessage.includes('is stopped') || rawMessage.includes('IC0508') || rawMessage.includes('Reject code: 5')) {
+  // Detect stopped canister errors (IC0508 / Reject code 5)
+  if (
+    rawMessage.includes('is stopped') || 
+    rawMessage.includes('IC0508') || 
+    rawMessage.includes('Reject code: 5') ||
+    rawMessage.includes('does not have a CallContextManager')
+  ) {
     const appError = new Error('The backend canister is currently stopped. Please try again later, or restart/redeploy the canister if you manage this app.') as AppError;
     appError.userMessage = appError.message;
     appError.errorClass = 'stopped-canister';
@@ -64,13 +69,13 @@ function parseTechnicalDetails(rawError: string, stack?: string): AppError['tech
     stack,
   };
   
-  // Extract Request ID
+  // Extract Request ID (various formats)
   const requestIdMatch = rawError.match(/Request ID:\s*([a-f0-9]+)/i);
   if (requestIdMatch) {
     details.requestId = requestIdMatch[1];
   }
   
-  // Extract Canister ID
+  // Extract Canister ID (various formats including "peuzn-cyaaa-aaaak-qwl3q-cai")
   const canisterIdMatch = rawError.match(/Canister (?:ID:\s*)?([a-z0-9-]+)/i);
   if (canisterIdMatch) {
     details.canisterId = canisterIdMatch[1];

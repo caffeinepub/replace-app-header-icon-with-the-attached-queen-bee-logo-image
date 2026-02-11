@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatCurrency, formatInvoiceNumber, calculateInvoiceAmount } from '@/features/invoices/types';
 import InvoicesReportFilters from './InvoicesReportFilters';
 import { isInvoiceInDateRange } from './invoiceReportDateUtils';
-import type { Invoice, Customer } from '@/backend';
+import type { Invoice, UpdatedCustomer } from '@/backend';
 
 type FilterType = 'all' | 'paid' | 'unpaid';
 
@@ -88,7 +88,7 @@ export default function InvoicesReportPage() {
 
 interface InvoicesReportContentProps {
   invoices: Invoice[];
-  customers: Customer[];
+  customers: UpdatedCustomer[];
   statusFilter: FilterType;
   setStatusFilter: (filter: FilterType) => void;
   selectedCustomerId: string;
@@ -115,7 +115,7 @@ function InvoicesReportContent({
 }: InvoicesReportContentProps) {
   // Create customer lookup map
   const customerMap = useMemo(() => {
-    const map = new Map<string, Customer>();
+    const map = new Map<string, UpdatedCustomer>();
     customers.forEach((customer) => {
       map.set(customer.id.toString(), customer);
     });

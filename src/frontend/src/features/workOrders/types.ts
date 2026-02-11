@@ -1,5 +1,7 @@
 import type { WorkOrder, WorkOrderWithCustomerName, CreateWorkOrderInput, UpdateWorkOrderInput, WorkOrderStatus } from '@/backend';
 
+export type { WorkOrderStatus };
+
 export interface WorkOrderFormData {
   customerId: bigint;
   description: string;

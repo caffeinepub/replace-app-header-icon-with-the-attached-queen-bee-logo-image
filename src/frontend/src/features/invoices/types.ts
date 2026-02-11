@@ -1,6 +1,7 @@
-import type { Invoice, InvoiceLineItem, Customer } from '../../backend';
+import type { Invoice, InvoiceLineItem, UpdatedCustomer } from '../../backend';
 
 export type { Invoice, InvoiceLineItem };
+export type Customer = UpdatedCustomer;
 
 export interface InvoiceFormData {
   customerId: bigint;

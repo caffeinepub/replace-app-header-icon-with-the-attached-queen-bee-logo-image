@@ -22,7 +22,7 @@ export default function ServicesPage() {
   };
 
   const handleEdit = (serviceId: bigint) => {
-    navigate({ to: '/services/$serviceId', params: { serviceId: serviceId.toString() } });
+    navigate({ to: '/services/$serviceId/edit', params: { serviceId: serviceId.toString() } });
   };
 
   return (

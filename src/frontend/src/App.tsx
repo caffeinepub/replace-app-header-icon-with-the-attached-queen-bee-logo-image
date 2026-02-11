@@ -1,31 +1,35 @@
-import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet } from '@tanstack/react-router';
-import { ThemeProvider } from 'next-themes';
+import { StrictMode } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
 import { Toaster } from '@/components/ui/sonner';
 import AppShell from '@/components/AppShell';
 import StartupErrorBoundary from '@/components/StartupErrorBoundary';
 import BootstrapGate from '@/components/BootstrapGate';
 import LandingPage from '@/features/landing/LandingPage';
-import CustomersPage from '@/features/customers/CustomersPage';
 import InvoicesPage from '@/features/invoices/InvoicesPage';
 import InvoiceDetailPage from '@/features/invoices/InvoiceDetailPage';
+import InvoicePrintPage from '@/features/invoices/InvoicePrintPage';
+import CustomersPage from '@/features/customers/CustomersPage';
 import ServicesPage from '@/features/services/ServicesPage';
 import ServiceEditPage from '@/features/services/ServiceEditPage';
 import WorkOrdersPage from '@/features/workOrders/WorkOrdersPage';
 import WorkOrderDetailPage from '@/features/workOrders/WorkOrderDetailPage';
 import InvoicesReportPage from '@/features/reports/InvoicesReportPage';
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 const rootRoute = createRootRoute({
   component: () => (
-    <StartupErrorBoundary>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-        <BootstrapGate>
-          <AppShell>
-            <Outlet />
-          </AppShell>
-        </BootstrapGate>
-        <Toaster />
-      </ThemeProvider>
-    </StartupErrorBoundary>
+    <AppShell>
+      <Outlet />
+    </AppShell>
   ),
 });
 
@@ -33,12 +37,6 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: LandingPage,
-});
-
-const customersRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/customers',
-  component: CustomersPage,
 });
 
 const invoicesRoute = createRoute({
@@ -53,6 +51,18 @@ const invoiceDetailRoute = createRoute({
   component: InvoiceDetailPage,
 });
 
+const invoicePrintRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/invoices/$invoiceId/print',
+  component: InvoicePrintPage,
+});
+
+const customersRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/customers',
+  component: CustomersPage,
+});
+
 const servicesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/services',
@@ -61,7 +71,7 @@ const servicesRoute = createRoute({
 
 const serviceEditRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/services/$serviceId',
+  path: '/services/$serviceId/edit',
   component: ServiceEditPage,
 });
 
@@ -85,9 +95,10 @@ const reportsInvoicesRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  customersRoute,
   invoicesRoute,
   invoiceDetailRoute,
+  invoicePrintRoute,
+  customersRoute,
   servicesRoute,
   serviceEditRoute,
   workOrdersRoute,
@@ -104,5 +115,16 @@ declare module '@tanstack/react-router' {
 }
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <StrictMode>
+      <StartupErrorBoundary>
+        <BootstrapGate>
+          <QueryClientProvider client={queryClient}>
+            <RouterProvider router={router} />
+            <Toaster />
+          </QueryClientProvider>
+        </BootstrapGate>
+      </StartupErrorBoundary>
+    </StrictMode>
+  );
 }

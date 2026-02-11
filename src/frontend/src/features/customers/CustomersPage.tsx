@@ -8,14 +8,14 @@ import AsyncState from '@/components/AsyncState';
 import CustomerForm from './CustomerForm';
 import CustomerDetailDialog from './CustomerDetailDialog';
 import { useCustomers } from './queries';
-import type { Customer } from '@/backend';
+import type { UpdatedCustomer } from '@/backend';
 
 export default function CustomersPage() {
   const { data: customers, isLoading, isError, error, refetch } = useCustomers();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState<bigint | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [editingCustomer, setEditingCustomer] = useState<UpdatedCustomer | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleSuccess = () => {
@@ -29,7 +29,7 @@ export default function CustomersPage() {
     setIsDetailDialogOpen(true);
   };
 
-  const handleEditCustomer = (customer: Customer) => {
+  const handleEditCustomer = (customer: UpdatedCustomer) => {
     setEditingCustomer(customer);
     setIsEditDialogOpen(true);
   };

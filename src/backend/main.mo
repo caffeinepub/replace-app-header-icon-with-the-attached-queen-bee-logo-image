@@ -8,7 +8,7 @@ import Iter "mo:core/Iter";
 import CurTime "mo:core/Time";
 import Nat "mo:core/Nat";
 
-
+// Enable data migration function on this actor
 
 actor {
   include MixinStorage();
@@ -30,12 +30,19 @@ actor {
   type PhotoId = Text;
   type WorkOrderId = Nat;
 
-  type Customer = {
+  public type GuitarDetails = {
+    make : Text;
+    model : Text;
+    serialNumber : Text;
+  };
+
+  public type UpdatedCustomer = {
     id : CustomerId;
     name : Name;
     phone : PhoneNumber;
     address : Address;
     email : Email;
+    guitars : [GuitarDetails]; // New mutable field for guitar details
   };
 
   public type CustomerInput = {
@@ -43,6 +50,7 @@ actor {
     phone : PhoneNumber;
     address : Address;
     email : Email;
+    guitars : [GuitarDetails];
   };
 
   public type WorkOrderStatus = {
@@ -157,7 +165,7 @@ actor {
   var nextServiceId = 1;
   var nextWorkOrderId = 1;
 
-  let customerStore = Map.empty<CustomerId, Customer>();
+  let customerStore = Map.empty<CustomerId, UpdatedCustomer>();
   let invoiceStore = Map.empty<InvoiceId, Invoice>();
   let serviceStore = Map.empty<ServiceId, Service>();
   let workOrderStore = Map.empty<WorkOrderId, WorkOrder>();
@@ -327,12 +335,13 @@ actor {
     let customerId = nextCustomerId;
     nextCustomerId += 1;
 
-    let customer : Customer = {
+    let customer : UpdatedCustomer = {
       id = customerId;
       name = name;
       phone = phone;
       address = address;
       email = email;
+      guitars = []; // Initialize with empty array when created
     };
 
     customerStore.add(customerId, customer);
@@ -349,26 +358,27 @@ actor {
         Runtime.trap("Customer not found");
       };
       case (?existingCustomer) {
-        let updatedCustomer : Customer = {
+        let updatedCustomer : UpdatedCustomer = {
           id;
           name = input.name;
           phone = input.phone;
           address = input.address;
           email = input.email;
+          guitars = input.guitars;
         };
         customerStore.add(id, updatedCustomer);
       };
     };
   };
 
-  public query ({ caller }) func getCustomer(id : CustomerId) : async ?Customer {
+  public query ({ caller }) func getCustomer(id : CustomerId) : async ?UpdatedCustomer {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can view customers");
     };
     customerStore.get(id);
   };
 
-  public query ({ caller }) func getAllCustomers() : async [Customer] {
+  public query ({ caller }) func getAllCustomers() : async [UpdatedCustomer] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can view customers");
     };
@@ -671,8 +681,8 @@ actor {
   };
 
   public shared ({ caller }) func deleteWorkOrder(workOrderId : WorkOrderId) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can delete work orders");
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can delete work orders");
     };
     workOrderStore.remove(workOrderId);
   };

@@ -7,7 +7,7 @@ import ServiceEditForm from './ServiceEditForm';
 import { useServiceDetail } from './queries';
 
 export default function ServiceEditPage() {
-  const { serviceId } = useParams({ from: '/services/$serviceId' });
+  const { serviceId } = useParams({ from: '/services/$serviceId/edit' });
   const navigate = useNavigate();
   const { data: service, isLoading, isError, error, refetch } = useServiceDetail(serviceId);
 

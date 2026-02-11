@@ -2,8 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '@/hooks/useActor';
 import { useAuthStatus } from '@/hooks/useAuthStatus';
 import { queryKeys } from '@/api/queryKeys';
-import { normalizeError } from '@/api/backendClient';
-import type { WorkOrder, WorkOrderWithCustomerName, Customer } from '@/backend';
+import { createAppError, normalizeError } from '@/api/backendClient';
+import type { WorkOrder, WorkOrderWithCustomerName, UpdatedCustomer } from '@/backend';
 import type { WorkOrderFormData } from './types';
 import { formDataToCreateInput, formDataToUpdateInput } from './types';
 
@@ -11,11 +11,15 @@ export function useWorkOrders() {
   const { actor, isFetching: isActorFetching } = useActor();
   const { isAuthenticated } = useAuthStatus();
 
-  return useQuery<WorkOrderWithCustomerName[]>({
+  return useQuery<WorkOrderWithCustomerName[], Error>({
     queryKey: queryKeys.workOrders.all,
     queryFn: async () => {
       if (!actor) return [];
-      return actor.listWorkOrders();
+      try {
+        return await actor.listWorkOrders();
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     enabled: !!actor && !isActorFetching && isAuthenticated,
   });
@@ -25,11 +29,15 @@ export function useWorkOrder(id: bigint | null) {
   const { actor, isFetching: isActorFetching } = useActor();
   const { isAuthenticated } = useAuthStatus();
 
-  return useQuery<WorkOrder | null>({
+  return useQuery<WorkOrder | null, Error>({
     queryKey: queryKeys.workOrders.detail(id?.toString() || '0'),
     queryFn: async () => {
       if (!actor || !id) return null;
-      return actor.getWorkOrder(id);
+      try {
+        return await actor.getWorkOrder(id);
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     enabled: !!actor && !isActorFetching && !!id && isAuthenticated,
   });
@@ -39,11 +47,15 @@ export function useCustomersForWorkOrders() {
   const { actor, isFetching: isActorFetching } = useActor();
   const { isAuthenticated } = useAuthStatus();
 
-  return useQuery<Customer[]>({
+  return useQuery<UpdatedCustomer[], Error>({
     queryKey: queryKeys.customers.all,
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllCustomers();
+      try {
+        return await actor.getAllCustomers();
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     enabled: !!actor && !isActorFetching && isAuthenticated,
   });
@@ -57,8 +69,12 @@ export function useCreateWorkOrder() {
     mutationFn: async (data: WorkOrderFormData) => {
       if (!actor) throw new Error('Backend not initialized');
       
-      const input = formDataToCreateInput(data);
-      return actor.createWorkOrder(input);
+      try {
+        const input = formDataToCreateInput(data);
+        return await actor.createWorkOrder(input);
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.workOrders.all });
@@ -77,8 +93,12 @@ export function useUpdateWorkOrder() {
     mutationFn: async ({ id, data }: { id: bigint; data: WorkOrderFormData }) => {
       if (!actor) throw new Error('Backend not initialized');
       
-      const input = formDataToUpdateInput(data);
-      return actor.updateWorkOrder(id, input);
+      try {
+        const input = formDataToUpdateInput(data);
+        return await actor.updateWorkOrder(id, input);
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.workOrders.all });
@@ -109,7 +129,11 @@ export function useAddWorkOrderPhoto() {
       contentType: string;
     }) => {
       if (!actor) throw new Error('Backend not initialized');
-      return actor.addWorkOrderPhoto(workOrderId, photoId, blobId, filename, contentType);
+      try {
+        return await actor.addWorkOrderPhoto(workOrderId, photoId, blobId, filename, contentType);
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.workOrders.detail(variables.workOrderId.toString()) });
@@ -133,7 +157,11 @@ export function useRemoveWorkOrderPhoto() {
       photoId: string;
     }) => {
       if (!actor) throw new Error('Backend not initialized');
-      return actor.removeWorkOrderPhoto(workOrderId, photoId);
+      try {
+        return await actor.removeWorkOrderPhoto(workOrderId, photoId);
+      } catch (error) {
+        throw createAppError(error);
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.workOrders.detail(variables.workOrderId.toString()) });

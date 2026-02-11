@@ -1,71 +1,74 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix frontend deployment blockers and improve failure diagnostics",
+  "title": "Print-optimized invoice document layout and print/PDF workflow",
   "requirements": [
     {
-      "id": "REQ-15",
-      "summary": "Ensure the frontend builds/deploys cleanly and surface complete error details for faster diagnosis when deploy/runtime initialization fails.",
+      "id": "REQ-1",
+      "summary": "Add a dedicated print-optimized invoice document layout (separate from the on-screen invoice detail UI) that includes core invoice info and excludes navigation/actions/photos/edit/payment UI.",
       "acceptanceCriteria": [
-        "A new build + deploy attempt completes without errors.",
-        "If the deploy fails again, the full error output (including stack trace/log lines) is captured and surfaced in the deployment output for diagnosis.",
-        "After the fix, `dfx deploy` (or the platform’s equivalent deployment command) succeeds for both backend and frontend artifacts."
+        "Clicking Print from the invoice detail page prints a document-style invoice layout (not cards/buttons/tabs from the app UI).",
+        "The printed output does not include the top action bar (Back/Print/Download/Edit) and does not include Before/After photo sections.",
+        "The printed output includes: business logo, invoice number, paid/unpaid status, customer name and contact info (when available), BUSINESS_ADDRESS (and TEXT_NUMBER when non-empty), line item table, total amount due, amount paid, balance, and PAYMENT_INSTRUCTIONS.",
+        "The printed output is legible in black-and-white printing and does not depend on the app’s on-screen grid/card layout to look correct."
       ],
       "file_operations": [
         {
-          "path": "frontend/public/assets/generated/queen-bee-app-icon.dim_180x180.png",
+          "path": "frontend/src/features/invoices/InvoiceDocument.tsx",
           "operation": "create",
-          "description": "Add the generated app icon to the public assets directory so static asset packaging during deploy can find it (referenced by frontend/src/components/BrandHeader.tsx)."
+          "description": "Create a reusable, print-first invoice document component that renders only invoice document content (logo using INVOICE_LOGO, invoice number, paid/unpaid status, customer details when available, BUSINESS_ADDRESS and optional TEXT_NUMBER, line-items table, totals with amount due/paid/balance, and PAYMENT_INSTRUCTIONS). Ensure it does not render any app navigation, action buttons, photo sections, or edit/payment UI. Keep styling document-oriented and black-and-white friendly (avoid reliance on card/grid UI)."
         },
         {
-          "path": "frontend/public/assets/generated/queen-bee-favicon.dim_32x32.png",
-          "operation": "create",
-          "description": "Add the generated 32x32 favicon to the public assets directory so static asset packaging during deploy can find it (referenced by frontend/index.html)."
-        },
-        {
-          "path": "frontend/public/assets/generated/queen-bee-favicon.dim_48x48.png",
-          "operation": "create",
-          "description": "Add the generated 48x48 favicon to the public assets directory so static asset packaging during deploy can find it (referenced by frontend/index.html)."
-        },
-        {
-          "path": "frontend/public/assets/generated/queen-bee-guitar-repair-logo.dim_512x512.png",
-          "operation": "create",
-          "description": "Add the generated logo image to the public assets directory so static asset packaging during deploy can find it (general branding usage)."
-        },
-        {
-          "path": "frontend/public/assets/generated/queen-bee-header-banner.dim_1600x400.png",
-          "operation": "create",
-          "description": "Add the generated header banner to the public assets directory so static asset packaging during deploy can find it (branding usage where applicable)."
-        },
-        {
-          "path": "frontend/public/assets/generated/queen-bee-icons.dim_256x256.png",
-          "operation": "create",
-          "description": "Add the generated icons image to the public assets directory so static asset packaging during deploy can find it (branding usage where applicable)."
-        },
-        {
-          "path": "frontend/public/assets/generated/queen-bee-invoice-logo.dim_512x512.png",
-          "operation": "create",
-          "description": "Add the generated invoice logo to the public assets directory so static asset packaging during deploy can find it (referenced by frontend/src/config/invoiceAssets.ts)."
-        },
-        {
-          "path": "frontend/public/assets/generated/queen-bee-invoice-watermark.dim_1200x1200.png",
-          "operation": "create",
-          "description": "Add the generated invoice watermark to the public assets directory so static asset packaging during deploy can find it (referenced by frontend/src/config/invoiceAssets.ts and frontend/src/index.css)."
-        },
-        {
-          "path": "frontend/src/api/backendClient.ts",
+          "path": "frontend/src/features/invoices/InvoiceDetailPage.tsx",
           "operation": "modify",
-          "description": "Improve error normalization so technical details always retain the raw error text and (when available) stack trace, enabling complete copy/paste diagnostics when backend calls fail during or after deploy."
+          "description": "Remove/disable the current print-only header block that attempts to print the on-screen layout, and ensure the invoice detail page remains a screen-optimized view (photos, payments, edit) while the dedicated InvoiceDocument layout is used only for printing/downloading."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Update Print and Download PDF actions to use the dedicated invoice document layout via a print-only view/route that auto-triggers browser print.",
+      "acceptanceCriteria": [
+        "Print uses the dedicated invoice document layout.",
+        "Download PDF uses the same dedicated invoice document layout and results in a browser print dialog suitable for saving as PDF.",
+        "No additional backend calls are required beyond the existing invoice/customer queries already used for the invoice detail page."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/features/invoices/InvoicePrintPage.tsx",
+          "operation": "create",
+          "description": "Create a print-only invoice view that loads invoice/customer data using the existing invoice/customer query hooks and renders InvoiceDocument only. After the document is ready, trigger the browser print dialog (and optionally close the window after printing when opened in a new tab). Do not introduce any additional data fetching beyond what the invoice detail page already uses."
         },
         {
-          "path": "frontend/src/components/AsyncState.tsx",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Expand the existing technical-details UI to display and copy the full raw error text (and stack when present), not just request/canister/method fields, so failures include all diagnostic log lines for troubleshooting."
+          "description": "Register a new route for the print-only invoice view (e.g., a nested route under invoices with the invoiceId param) so it can be navigated to directly and renders the InvoicePrintPage."
         },
         {
-          "path": "frontend/src/components/StartupErrorBoundary.tsx",
+          "path": "frontend/src/features/invoices/InvoiceDetailPage.tsx",
           "operation": "modify",
-          "description": "Enhance startup failure rendering to show/copy full error message plus stack and ensure console logging includes full errorInfo, improving the ability to capture complete failure output when the app cannot initialize after deployment."
+          "description": "Change the Print and Download PDF actions to open/navigate to the print-only invoice route so printing/downloading uses the dedicated InvoiceDocument layout rather than window.print() on the current screen UI. Keep the on-screen invoice detail page layout otherwise unchanged."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Extend print CSS to ensure consistent page size/margins and improved page-break behavior for invoice documents, without changing the on-screen invoice detail UI.",
+      "acceptanceCriteria": [
+        "Printed invoice uses consistent page margins and a standard page size already used by the app’s print rules (e.g., letter).",
+        "Line items table does not break mid-row; major sections avoid splitting across pages when feasible.",
+        "Non-print (screen) layout remains functional and visually unchanged aside from Print/Download behavior improvements."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Update/extend @media print rules to better support a document-style invoice: keep letter sizing and margins, add page-break control for invoice sections and the line-items table (avoid breaking mid-row), and ensure print-specific typography/spacing is consistent. Ensure changes are scoped to print/document classes so the normal screen UI remains unchanged."
+        },
+        {
+          "path": "frontend/src/components/AppShell.tsx",
+          "operation": "modify",
+          "description": "Add print-hiding behavior for global app chrome (header/nav/footer) by applying the existing no-print class to BrandHeader, the nav bar, and the footer so they never appear in printed output, especially when printing from the dedicated print route."
         }
       ]
     }

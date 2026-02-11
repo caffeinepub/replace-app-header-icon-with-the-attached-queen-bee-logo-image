@@ -19,6 +19,7 @@ export type PhotoId = string;
 export type WorkOrderId = bigint;
 export type Description = string;
 export interface CustomerInput {
+    guitars: Array<GuitarDetails>;
     name: Name;
     email: Email;
     address: Address;
@@ -38,6 +39,11 @@ export interface WorkOrderWithCustomerName {
 }
 export type PhoneNumber = string;
 export type Quantity = bigint;
+export interface GuitarDetails {
+    model: string;
+    make: string;
+    serialNumber: string;
+}
 export type Email = string;
 export interface Photo {
     id: PhotoId;
@@ -82,6 +88,14 @@ export interface Service {
     notes?: string;
     price?: bigint;
 }
+export interface UpdatedCustomer {
+    id: CustomerId;
+    guitars: Array<GuitarDetails>;
+    name: Name;
+    email: Email;
+    address: Address;
+    phone: PhoneNumber;
+}
 export type Name = string;
 export interface Invoice {
     id: InvoiceId;
@@ -93,13 +107,6 @@ export interface Invoice {
     customerId: CustomerId;
     amountDue: bigint;
     items: Array<InvoiceLineItem>;
-}
-export interface Customer {
-    id: CustomerId;
-    name: Name;
-    email: Email;
-    address: Address;
-    phone: PhoneNumber;
 }
 export interface CreateServiceInput {
     service?: string;
@@ -150,11 +157,11 @@ export interface backendInterface {
     createService(input: CreateServiceInput): Promise<ServiceId>;
     createWorkOrder(input: CreateWorkOrderInput): Promise<WorkOrderId>;
     deleteWorkOrder(workOrderId: WorkOrderId): Promise<void>;
-    getAllCustomers(): Promise<Array<Customer>>;
+    getAllCustomers(): Promise<Array<UpdatedCustomer>>;
     getAllInvoices(): Promise<Array<Invoice>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
-    getCustomer(id: CustomerId): Promise<Customer | null>;
+    getCustomer(id: CustomerId): Promise<UpdatedCustomer | null>;
     getInvoice(id: InvoiceId): Promise<Invoice | null>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getWorkOrder(workOrderId: WorkOrderId): Promise<WorkOrder | null>;
